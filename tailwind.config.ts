@@ -3,12 +3,12 @@ import defaultTheme from 'tailwindcss/defaultTheme';
 import colors from 'tailwindcss/colors';
 
 function addVariablesForColors({ addBase, theme }: any) {
-  const allColors = theme('colors'); // Get Tailwind's color palette
+  const allColors = theme('colors') as Record<string, string | Record<string, string>>;
   const newVars = Object.fromEntries(
     Object.entries(allColors).flatMap(([key, val]) =>
       typeof val === 'string'
         ? [[`--${key}`, val]]
-        : Object.entries(val).map(([shade, hex]) => [`--${key}-${shade}`, hex])
+        : Object.entries(val as Record<string, string>).map(([shade, hex]) => [`--${key}-${shade}`, hex])
     )
   );
 
