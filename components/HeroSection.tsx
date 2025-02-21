@@ -10,13 +10,11 @@ export default function HeroSection() {
       rotationRange={25}
       images={[
         "/images/mouse-trail/1.jpg",
-        "/images/mouse-trail/2.jpg",
         "/images/mouse-trail/3.jpg",
         "/images/mouse-trail/4.jpg",
         "/images/mouse-trail/5.jpg",
         "/images/mouse-trail/6.jpg",
         "/images/mouse-trail/7.jpg",
-        "/images/mouse-trail/8.jpg",
       ]}
     >
       <HeroParallax products={products} />

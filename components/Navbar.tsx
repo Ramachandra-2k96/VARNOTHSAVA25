@@ -66,38 +66,39 @@ function Navbar({ className }: { className?: string }) {
             <div className="fixed inset-0 bg-black/95 pt-16 px-4 overflow-y-auto min-h-screen">
               <div className="flex flex-col space-y-6 mt-4">
                 {/* Example: Direct Link (no accordion) */}
-                <MobileDirectLink href="/about" label="About" />
-
-                {/* Mobile Menu Item (accordion) */}
+                <MobileDirectLink href="#about" label="About" />
+                <MobileDirectLink href="#timeline" label="Time Line" />
 
                 <MobileMenuItem title="Events">
                   <div className="grid grid-cols-1 gap-6 py-2">
-                    <MobileProductItem
-                      title="Algochurn"
-                      href="https://algochurn.com"
-                      src="https://assets.aceternity.com/demos/algochurn.webp"
-                      description="Prepare for tech interviews like never before."
-                    />
-                    <MobileProductItem
-                      title="Tailwind Master Kit"
-                      href="https://tailwindmasterkit.com"
-                      src="https://assets.aceternity.com/demos/tailwindmasterkit.webp"
-                      description="Production ready Tailwind css components for your next project"
-                    />
-                    <MobileProductItem
-                      title="Moonbeam"
-                      href="https://gomoonbeam.com"
-                      src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.51.31%E2%80%AFPM.png"
-                      description="Never write from scratch again. Go from idea to blog in minutes."
-                    />
-                    <MobileProductItem
-                      title="Rogue"
-                      href="https://userogue.com"
-                      src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.47.07%E2%80%AFPM.png"
-                      description="Respond to government RFPs, RFIs and RFQs 10x faster using AI"
-                    />
+                  <MobileProductItem
+                  title="Technical"
+                  href="/events/#tech"
+                  src="/images/main_event/tech.jpg"
+                  description="Showcase your technical prowess with coding challenges, hackathons, and innovative problem-solving events."
+                />
+                <MobileProductItem
+                  title="Cultural"
+                  href="/events/#cultural"
+                  src="/images/main_event/cultural.jpg"
+                  description="Celebrate creativity with music, dance, drama, and artistic showcases that bring cultures together."
+                />
+                <MobileProductItem
+                  title="General"
+                  href="/events/#general"
+                  src="/images/main_event/general.png"
+                  description="Engage in fun and thought-provoking competitions that test your wit, knowledge, and spontaneity."
+                />
+                <MobileProductItem
+                  title="Gaming"
+                  href="/events/#gaming"
+                  src="/images/main_event/game.png"
+                  description="Dive into the ultimate gaming battles with esports tournaments, arcade challenges, and strategy showdowns."
+                />
                   </div>
                 </MobileMenuItem>
+                <MobileDirectLink href="/login" label="Login" />
+
               </div>
             </div>
           )}
@@ -108,35 +109,38 @@ function Navbar({ className }: { className?: string }) {
         // ─────────────────────────────────────────────────────────────────
         <Menu setActive={setActive}>
           <MenuItem direct href="#about" item="About" setActive={setActive} active={active} />
+          <MenuItem direct href="#timeline" item="Time Line" setActive={setActive} active={active} />
+          <MenuItem direct href="#gallery" item="Gallery" setActive={setActive} active={active} />
 
           <MenuItem setActive={setActive} active={active} item="Events">
             <div className="text-sm grid grid-cols-2 gap-10 p-4">
               <ProductItem
                 title="Technical"
-                href="https://algochurn.com"
-                src="https://assets.aceternity.com/demos/algochurn.webp"
-                description="Prepare for tech interviews like never before."
+                href="/events/#tech"
+                src="/images/main_event/tech.jpg"
+                description="Showcase your technical prowess with coding challenges, hackathons, and innovative problem-solving events."
               />
               <ProductItem
                 title="Cultural"
-                href="https://tailwindmasterkit.com"
-                src="https://assets.aceternity.com/demos/tailwindmasterkit.webp"
-                description="Production ready Tailwind css components for your next project"
+                href="/events/#cultural"
+                src="/images/main_event/cultural.jpg"
+                description="Celebrate creativity with music, dance, drama, and artistic showcases that bring cultures together."
               />
               <ProductItem
                 title="General"
-                href="https://gomoonbeam.com"
-                src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.51.31%E2%80%AFPM.png"
-                description="Never write from scratch again. Go from idea to blog in minutes."
+                href="/events/#general"
+                src="/images/main_event/general.png"
+                description="Engage in fun and thought-provoking competitions that test your wit, knowledge, and spontaneity."
               />
               <ProductItem
                 title="Gaming"
-                href="https://userogue.com"
-                src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.47.07%E2%80%AFPM.png"
-                description="Respond to government RFPs, RFIs and RFQs 10x faster using AI"
+                href="/events/#gaming"
+                src="/images/main_event/game.png"
+                description="Dive into the ultimate gaming battles with esports tournaments, arcade challenges, and strategy showdowns."
               />
             </div>
           </MenuItem>
+          <MenuItem direct href="/login" item="Login" setActive={setActive} active={active} />
         </Menu>
       )}
     </div>

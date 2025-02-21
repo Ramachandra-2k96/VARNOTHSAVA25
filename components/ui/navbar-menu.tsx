@@ -112,21 +112,31 @@ export const ProductItem = ({
   src: string;
 }) => {
   return (
-    <Link href={href} className="flex space-x-2">
-      <Image
-        src={src}
-        width={140}
-        height={70}
-        alt={title}
-        className="flex-shrink-0 rounded-md shadow-2xl"
-      />
-      <div>
-        <h4 className="text-xl font-bold mb-1 text-white">{title}</h4>
-        <p className="text-gray-400 text-sm max-w-[10rem]">{description}</p>
+    <Link
+      href={href}
+      className="flex space-x-3 items-center p-2 transition-all duration-300 rounded-md hover:bg-white/10"
+    >
+      <div className="relative overflow-hidden rounded-md">
+        <Image
+          src={src}
+          width={140}
+          height={70}
+          alt={title}
+          className="flex-shrink-0 rounded-md shadow-2xl transition-transform duration-300 group-hover:scale-105"
+        />
+      </div>
+      <div className="transition-all duration-300 group-hover:-translate-y-1">
+        <h4 className="text-xl font-bold mb-1 text-white transition-colors duration-300 group-hover:text-yellow-400">
+          {title}
+        </h4>
+        <p className="text-gray-400 text-sm max-w-[10rem] transition-colors duration-300 group-hover:text-gray-300">
+          {description}
+        </p>
       </div>
     </Link>
   );
 };
+
 
 export const HoveredLink = ({ children, ...rest }: any) => {
   return (

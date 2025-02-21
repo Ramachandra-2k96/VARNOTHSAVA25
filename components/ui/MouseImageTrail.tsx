@@ -74,7 +74,7 @@ const MouseImageTrail: React.FC<MouseImageTrailProps> = ({
     animate(
       selector,
       { opacity: [1, 0] },
-      { ease: "linear", duration: 1, delay: 1.5 }
+      { ease: "linear", duration: 0.5, delay: 0.7 }
     );
 
     imageRenderCount.current++;
