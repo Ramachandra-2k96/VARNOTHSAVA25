@@ -4,21 +4,21 @@ import { BentoGrid } from "./ui/bento-grid";
 
 export default function GallerySection() {
   return (
-    <section className="py-12">
+    <section id="gallery" className="py-12 bg-black text-neutral-200">
       {/* Section Heading */}
       <div className="max-w-4xl mx-auto text-center mb-8">
-        <h2 className="text-3xl font-bold">Gallery</h2>
-        <p className="mt-2 text-lg text-neutral-600 dark:text-neutral-300">
+        <h2 className="text-3xl font-bold text-white">Gallery</h2>
+        <p className="mt-2 text-lg text-neutral-400">
           A few shots about previous Varnothsava
         </p>
       </div>
       {/* Grid of Images */}
-      <BentoGrid className="max-w-4xl mx-auto">
+      <BentoGrid className="max-w-6xl mx-auto">
         {items.map((item, i) => (
           <div
             key={i}
             className={cn(
-              "relative group rounded-xl overflow-hidden",
+              "relative group rounded-xl overflow-hidden bg-neutral-800",
               (i === 3 || i === 6) && "md:col-span-2"
             )}
           >
@@ -29,11 +29,11 @@ export default function GallerySection() {
               className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
             />
             {/* Overlay with Text (hidden until hover) */}
-            <div className="absolute inset-0 flex flex-col justify-center items-center bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300">
+            <div className="absolute inset-0 flex flex-col justify-center items-center bg-black bg-opacity-30 group-hover:bg-opacity-60 transition-all duration-300">
               <h3 className="text-white font-bold text-xl opacity-0 group-hover:opacity-100 transition duration-300">
                 {item.title}
               </h3>
-              <p className="text-white text-sm opacity-0 group-hover:opacity-100 transition duration-300">
+              <p className="text-neutral-300 text-sm opacity-0 group-hover:opacity-100 transition duration-300">
                 {item.description}
               </p>
             </div>
@@ -79,7 +79,8 @@ const items = [
     title: "Night Lights",
     description: "The city comes alive under the night sky.",
     image: "/images/mouse-trail/1.jpg",
-  }, {
+  },
+  {
     title: "Night Lights",
     description: "The city comes alive under the night sky.",
     image: "/images/mouse-trail/1.jpg",

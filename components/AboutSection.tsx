@@ -62,7 +62,7 @@ export default function AboutSection() {
   }
 
   return (
-    <section className="relative py-24 bg-black overflow-hidden">
+    <section id="about" className="relative py-24 bg-black overflow-hidden">
       {/* Subtle background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black via-black to-black/90 pointer-events-none"></div>
       
