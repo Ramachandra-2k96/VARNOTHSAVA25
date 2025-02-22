@@ -5,142 +5,122 @@ import { Timeline } from "@/components/ui/timeline";
 export default function TimelineSection() {
   const data = [
     {
-      title: "2024",
+      title: "March 20–21, 2025",
       content: (
         <div>
           <p className="text-neutral-100 text-xs md:text-sm font-normal mb-8">
-            Built and launched Aceternity UI and Aceternity UI Pro from scratch
+            Kick off Varnothsava with a vibrant mix of techno-cultural events.
+            Over these two days, enjoy coding challenges, art exhibitions, interactive workshops, and live performances that fuse technology with creativity.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
-              src="https://assets.aceternity.com/templates/startup-1.webp"
-              alt="startup template"
+              src="/images/main/IMG_3927.webp"
+              alt="Techno-Cultural Event 1"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
             <Image
-              src="https://assets.aceternity.com/templates/startup-2.webp"
-              alt="startup template"
+              src="/images/main/IMG_5098.webp"
+              alt="Techno-Cultural Event 2"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
             <Image
-              src="https://assets.aceternity.com/templates/startup-3.webp"
-              alt="startup template"
+              src="/images/main/DSC01664.webp"
+              alt="Techno-Cultural Event 3"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
             <Image
-              src="https://assets.aceternity.com/templates/startup-4.webp"
-              alt="startup template"
+              src="/images/main/DSC02622.webp"
+              alt="Techno-Cultural Event 4"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
           </div>
         </div>
       ),
     },
     {
-      title: "Early 2023",
+      title: "March 22, 2025",
       content: (
         <div>
           <p className="text-neutral-100 text-xs md:text-sm font-normal mb-8">
-            I usually run out of copy, but when I see content this big, I try to
-            integrate lorem ipsum.
-          </p>
-          <p className="text-neutral-100 text-xs md:text-sm font-normal mb-8">
-            Lorem ipsum is for people who are too lazy to write copy. But we are
-            not. Here are some more example of beautiful designs I built.
+            Celebrate our Annual Day with grandeur and elegance. Enjoy inspiring keynote speeches, award ceremonies, and a showcase of achievements that highlight the spirit of our college community.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
-              src="https://assets.aceternity.com/pro/hero-sections.png"
-              alt="hero template"
+              src="/images/main/DSC_0477.webp"
+              alt="Annual Day Celebration 1"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
             <Image
-              src="https://assets.aceternity.com/features-section.png"
-              alt="feature template"
+              src="/images/main/IMG_5422.webp"
+              alt="Annual Day Celebration 2"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
             <Image
-              src="https://assets.aceternity.com/pro/bento-grids.png"
-              alt="bento template"
+              src="/images/main/IMG_4761.webp"
+              alt="Annual Day Celebration 3"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
             <Image
-              src="https://assets.aceternity.com/cards.png"
-              alt="cards template"
+              src="/images/main/IMG_0399.webp"
+              alt="Annual Day Celebration 4"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
           </div>
         </div>
       ),
     },
     {
-      title: "Changelog",
+      title: "March 23, 2025",
       content: (
         <div>
-          <p className="text-neutral-100 text-xs md:text-sm font-normal mb-4">
-            Deployed 5 new components on Aceternity today
+          <p className="text-neutral-100 text-xs md:text-sm font-normal mb-8">
+            The grand finale packs a punch! Start your day at the Autoexpo and Alumni Meet, showcasing innovative vehicles and reconnecting with old friends.
+            Then, gear up for an electrifying evening as the renowned band “Thamaraseery churam” takes the stage for an unforgettable performance.
           </p>
-          <div className="mb-8">
-            <div className="flex gap-2 items-center text-neutral-100 text-xs md:text-sm">
-              ✅ Card grid component
-            </div>
-            <div className="flex gap-2 items-center text-neutral-100 text-xs md:text-sm">
-              ✅ Startup template Aceternity
-            </div>
-            <div className="flex gap-2 items-center text-neutral-100 text-xs md:text-sm">
-              ✅ Random file upload lol
-            </div>
-            <div className="flex gap-2 items-center text-neutral-100 text-xs md:text-sm">
-              ✅ Himesh Reshammiya Music CD
-            </div>
-            <div className="flex gap-2 items-center text-neutral-100 text-xs md:text-sm">
-              ✅ Salman Bhai Fan Club registrations open
-            </div>
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <Image
-              src="https://assets.aceternity.com/pro/hero-sections.png"
-              alt="hero template"
+              src="/images/main/DSC_0355.webp"
+              alt="Autoexpo & Alumni Meet"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
             <Image
-              src="https://assets.aceternity.com/features-section.png"
-              alt="feature template"
+              src="/images/main/DSC_0018.webp"
+              alt="Autoexpo Display"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
             <Image
-              src="https://assets.aceternity.com/pro/bento-grids.png"
-              alt="bento template"
+              src="/images/main/IMG_7675.webp"
+              alt="Evening Band Performance"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
             <Image
-              src="https://assets.aceternity.com/cards.png"
-              alt="cards template"
+              src="/images/mouse-trail/7.jpg"
+              alt="Live Concert Vibes"
               width={500}
               height={500}
-              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg transition-transform duration-300 hover:scale-105"
             />
           </div>
         </div>

@@ -5,7 +5,6 @@ import HeroSection from "@/components/HeroSection";
 import AboutSection from "@/components/AboutSection";
 import EventsSection from "@/components/EventsSection";
 import TimelineSection from "@/components/TimelineSection";
-import SpeakersSection from "@/components/SpeakersSection";
 import GallerySection from "@/components/GallerySection";
 import Footer from "@/components/Footer";
 export default function Home() {
@@ -16,7 +15,6 @@ export default function Home() {
       <AboutSection />
       <EventsSection />
       <TimelineSection />
-      <SpeakersSection />
       <GallerySection />
       <Footer />
     </div>

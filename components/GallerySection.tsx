@@ -46,43 +46,44 @@ export default function GallerySection() {
 
 const items = [
   {
-    title: "Sunset Glory",
-    description: "Experience the serene sunset over the horizon.",
-    image: "/images/sunset.jpg",
+    title: "Food Fest",
+    description: "Indulge in a variety of delicious cuisines from across regions.",
+    image: "/images/main/DSC02622.webp",
   },
   {
-    title: "Historic Moments",
-    description: "Cherished memories from Varnothsava.",
-    image: "/images/historic.jpg",
+    title: "Tech & Cultural Events",
+    description: "Exciting competitions, workshops, and mesmerizing performances.",
+    image: "/images/main/DSC_0345.webp",
   },
   {
-    title: "Cultural Fiesta",
-    description: "Diving into vibrant traditions and festivities.",
-    image: "/images/fiesta.jpg",
+    title: "Dance & Drama",
+    description: "Experience breathtaking dance performances and theatrical acts.",
+    image: "/images/main/DSC_0477.webp",
   },
   {
-    title: "Architectural Marvels",
-    description: "Witness the blend of tradition and modernity.",
-    image: "/images/architecture.jpg",
+    title: "Music & Arts Showcase",
+    description: "A perfect blend of artistic creativity and musical talent.",
+    image: "/images/main/IMG_7708.webp",
   },
   {
-    title: "Nature's Embrace",
-    description: "Green landscapes and natural beauty.",
-    image: "/images/nature.jpg",
+    title: "Auto Expo",
+    description: "A thrilling display of vintage and modern automobiles.",
+    image: "/images/main/IMG_4761.webp",
   },
   {
-    title: "Dramatic Performances",
-    description: "Capturing the emotion of the event.",
-    image: "/images/performance.jpg",
-  },
-  {
-    title: "Night Lights",
-    description: "The city comes alive under the night sky.",
-    image: "/images/mouse-trail/1.jpg",
+    title: "College Band",
+    description: "Our very own band setting the stage on fire with live music.",
+    image: "/images/main/DSC_0513.webp",
   },
   {
     title: "Night Lights",
-    description: "The city comes alive under the night sky.",
+    description: "The campus illuminated beautifully, setting a magical vibe.",
     image: "/images/mouse-trail/1.jpg",
+  },
+  {
+    title: "Band",
+    description: "Electrifying concert by the famous band!",
+    image: "/images/mouse-trail/7.jpg",
   },
 ];
+

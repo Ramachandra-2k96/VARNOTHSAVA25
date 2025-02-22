@@ -77,18 +77,6 @@ export default function AboutSection() {
         animate={controls}
         className="max-w-7xl mx-auto px-6 sm:px-8 relative"
       >
-        {/* Legacy Badge - Refined */}
-        <motion.div
-          variants={itemVariants}
-          className="flex items-center justify-center mb-16"
-        >
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/30 to-pink-600/30 rounded-full blur-md"></div>
-            <div className="relative bg-black rounded-full border border-white/5 px-6 py-2">
-              <span className="text-white font-medium tracking-wide text-sm">Since 2014</span>
-            </div>
-          </div>
-        </motion.div>
 
         {/* Main Title - Enhanced */}
         <motion.h2

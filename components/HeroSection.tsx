@@ -24,81 +24,81 @@ export default function HeroSection() {
 
 export const products = [
   {
-    title: "Moonbeam",
+    title: "Varnothsava",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/moonbeam.png",
+      "/images/main/DSC01664.webp",
   },
   {
-    title: "Cursor",
+    title: "Moto mania",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/cursor.png",
+      "/images/main/DSC_0018.webp",
   },
   {
-    title: "Rogue",
+    title: "Moto mania",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/rogue.png",
-  },
- 
-  {
-    title: "Editorially",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/editorially.png",
-  },
-  {
-    title: "Editrix AI",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/editrix.png",
-  },
-  {
-    title: "Pixel Perfect",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/pixelperfect.png",
+      "/images/main/DSC_0355.webp",
   },
  
   {
-    title: "Algochurn",
+    title: "College band",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/algochurn.png",
+      "/images/main/DSC_0513.webp",
   },
   {
-    title: "Aceternity UI",
+    title: "Varnothsava",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/aceternityui.png",
+      "/images/main/IMG_0421.webp",
   },
   {
-    title: "Tailwind Master Kit",
+    title: "Varnothsava",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/tailwindmasterkit.png",
-  },
-  {
-    title: "SmartBridge",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/smartbridge.png",
-  },
-  {
-    title: "Renderwork Studio",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/renderwork.png",
+      "/images/main/DSC02460.webp",
   },
  
   {
-    title: "Creme Digital",
+    title: "Varnothsava",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/cremedigital.png",
+      "/images/main/DSC_0041.webp",
   },
   {
-    title: "Golden Bells Academy",
+    title: "Varnothsava",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/goldenbellsacademy.png",
+      "/images/main/IMG_0497.webp",
   },
   {
-    title: "Invoker Labs",
+    title: "Algoritham",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/invoker.png",
+      "/images/main/IMG_7708.webp",
   },
   {
-    title: "E Free Invoice",
+    title: "Varnothsava",
     thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/efreeinvoice.png",
+      "/images/main/IMG_3927.webp",
+  },
+  {
+    title: "Varnothsava",
+    thumbnail:
+      "/images/main/DSC_0027.webp",
+  },
+ 
+  {
+    title: "Varnothsava",
+    thumbnail:
+      "/images/main/IMG_0399.webp",
+  },
+  {
+    title: "Varnothsava",
+    thumbnail:
+      "/images/main/DSC_0014.webp",
+  },
+  {
+    title: "Varnothsava",
+    thumbnail:
+      "/images/main/DSC_0293.webp",
+  },
+  {
+    title: "Tech-event Varnothsava",
+    thumbnail:
+      "/images/main/IMG_3858.webp",
   },
 ];
