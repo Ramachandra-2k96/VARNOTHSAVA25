@@ -39,12 +39,12 @@ export default function Footer() {
               <span className="font-medium">Student Coordinators</span>:
             </p>
             <p className="text-sm ml-4 mb-1 text-gray-300">
-              Ms. Vasundhara :{" "}
+              Mr. Ramachandra Udupa:{" "}
               <a
                 href="tel:8722739363"
                 className="transition-colors duration-300 hover:text-gray-400"
               >
-                8722739363
+                8867004280
               </a>
             </p>
             <p className="text-sm ml-4 text-gray-300">
@@ -66,16 +66,16 @@ export default function Footer() {
               <li>• When will the results be announced?</li>
               <li>• Is there any mobile application for this fest?</li>
             </ul>
-            <h3 className="text-xl font-serif font-semibold mb-4">Design &amp; Developers</h3>
+            <h3 className="text-xl font-serif font-semibold mb-4">Design &amp; Developer</h3>
             <p className="text-sm text-gray-300">
-              Team X to Infinity
+              Ramachandra Udupa
               <br />
               Email:{" "}
               <a
-                href="mailto:xtoinfinity18@gmail.com"
+                href="mailto:ramachandra2004@gmail.com"
                 className="transition-colors duration-300 hover:text-gray-400"
               >
-                xtoinfinity18@gmail.com
+                ramachandra2004@gmail.com
               </a>
             </p>
           </div>

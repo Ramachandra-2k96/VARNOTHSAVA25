@@ -13,16 +13,19 @@ export const HeroParallax = ({
     thumbnail: string
   }[]
 }) => {
-  const firstRow = products.slice(0, 5)
-  const secondRow = products.slice(5, 10)
-  const thirdRow = products.slice(10, 15)
+  // Memoize sliced arrays to avoid recalculating on every render
+  const firstRow = React.useMemo(() => products.slice(0, 5), [products])
+  const secondRow = React.useMemo(() => products.slice(5, 10), [products])
+  const thirdRow = React.useMemo(() => products.slice(10, 15), [products])
+
   const ref = React.useRef(null)
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   })
 
-  const springConfig = { stiffness: 300, damping: 30, bounce: 100 }
+  // Adjusted spring config for smoother animations
+  const springConfig = { stiffness: 100, damping: 30 } // Removed bounce for less jitter
 
   const translateX = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1000]), springConfig)
   const translateXReverse = useSpring(useTransform(scrollYProgress, [0, 1], [0, -1000]), springConfig)
@@ -35,6 +38,7 @@ export const HeroParallax = ({
     <div
       ref={ref}
       className="h-[300vh] py-40 overflow-hidden antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d] bg-black"
+      style={{ willChange: "transform" }} // Hint browser for GPU acceleration
     >
       <Header />
       <motion.div
@@ -43,6 +47,7 @@ export const HeroParallax = ({
           rotateZ,
           translateY,
           opacity,
+          willChange: "transform",
         }}
       >
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 mb-20">
@@ -129,7 +134,16 @@ export const Header = () => {
             transition={{ delay: 0.8 }}
             className="text-base md:text-lg text-zinc-400"
           >
-            at <span className="text-zinc-200 font-semibold"><a href="https://www.bing.com/maps?&ty=18&q=smvit%20bantakal&ss=ypid.YN4070x15793105497940586496&mb=13.264623~74.770964~13.245804~74.801327&description=Vishwothama%20Nagar%2C%20Bantakal%2C%20Udupi%2C%20Karnataka%20574115%C2%B7College%2Funiversity&cardbg=%2388979C&dt=1740151800000&tt=Shri%20Madhwa%20Vadiraja%20Institute%20of%20Technology%20and%20Management&tsts0=%2526ty%253D18%2526q%253Dsmvit%252520bantakal%2526ss%253Dypid.YN4070x15793105497940586496%2526mb%253D13.264623~74.770964~13.245804~74.801327%2526description%253DVishwothama%252520Nagar%25252C%252520Bantakal%25252C%252520Udupi%25252C%252520Karnataka%252520574115%2525C2%2525B7College%25252Funiversity%2526cardbg%253D%25252388979C%2526dt%253D1740151800000&tstt0=Shri%20Madhwa%20Vadiraja%20Institute%20of%20Technology%20and%20Management&cp=13.255214~74.780824&lvl=16&pi=0&ftst=0&ftics=False&v=2&sV=2&form=S00027">SMVITM</a></span>
+            at{" "}
+            <span className="text-zinc-200 font-semibold">
+              <a
+                href="https://www.bing.com/maps?..."
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                SMVITM
+              </a>
+            </span>
           </motion.div>
         </div>
       </motion.div>
@@ -137,24 +151,22 @@ export const Header = () => {
   )
 }
 
-export const ProductCard = ({
-  product,
-  translate,
-}: {
+interface ProductProps {
   product: {
     title: string
     thumbnail: string
   }
   translate: MotionValue<number>
-}) => {
+}
+
+export const ProductCard = React.memo(({ product, translate }: ProductProps) => {
   return (
     <motion.div
-      style={{ x: translate }}
+      style={{ x: translate, willChange: "transform" }} // Added will-change here as well
       whileHover={{
         y: -20,
         transition: { duration: 0.3 },
       }}
-      key={product.title}
       className="group/product h-96 w-[30rem] relative flex-shrink-0 rounded-xl overflow-hidden"
     >
       <Image
@@ -171,5 +183,4 @@ export const ProductCard = ({
       </div>
     </motion.div>
   )
-}
-
+})
