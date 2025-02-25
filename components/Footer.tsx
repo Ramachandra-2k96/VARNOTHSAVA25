@@ -47,15 +47,6 @@ export default function Footer() {
                 8867004280
               </a>
             </p>
-            <p className="text-sm ml-4 text-gray-300">
-              Mr. Shankar Shenoy :{" "}
-              <a
-                href="tel:9945176697"
-                className="transition-colors duration-300 hover:text-gray-400"
-              >
-                9945176697
-              </a>
-            </p>
           </div>
           {/* FAQ & Design/Developers Section */}
           <div>

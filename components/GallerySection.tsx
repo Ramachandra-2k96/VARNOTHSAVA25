@@ -85,5 +85,15 @@ const items = [
     description: "Electrifying concert by the famous band!",
     image: "/images/mouse-trail/7.jpg",
   },
+  {
+    title: "Yakshagana",
+    description: "Experience breathtaking dance performances and theatrical acts.",
+    image: "/images/main/DSC_0027.webp",
+  },
+  {
+    title: "Decoration",
+    description: "Nice decoration.",
+    image: "/images/main/IMG_0367.webp",
+  },
 ];
 
