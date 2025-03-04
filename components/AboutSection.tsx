@@ -4,8 +4,10 @@ import { useEffect } from "react"
 import { motion, useAnimation, useScroll, useTransform } from "framer-motion"
 import { Trophy, Award, Users } from "lucide-react"
 import { useInView } from "react-intersection-observer"
+import { useRouter } from "next/navigation"
 
 export default function AboutSection() {
+  const router = useRouter()
   const { scrollY } = useScroll()
   const opacity = useTransform(scrollY, [0, 300], [0, 1])
   const scale = useTransform(scrollY, [0, 300], [0.8, 1])
@@ -43,11 +45,29 @@ export default function AboutSection() {
     }
   }, [controls, inView])
 
+  const handleClick = (href: string) => {
+    // Check if target element exists on current page
+    const targetId = href.split('#')[1]
+    const element = document.getElementById(targetId)
+
+    if (element) {
+      // If element exists, smooth scroll to it
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+    } else {
+      // If element doesn't exist, navigate to new page
+      router.push(href)
+    }
+  }
+
   return (
     <motion.section 
       ref={ref}
       style={{ opacity, scale }}
       className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden"
+      id = "about"
     >
       {/* Improved animated gradient background with better blending */}
       <div className="absolute inset-0 overflow-hidden">
@@ -176,6 +196,7 @@ export default function AboutSection() {
             }}
             whileTap={{ scale: 0.95 }}
             className="mt-8 sm:mt-10 px-8 sm:px-12 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-lg sm:text-xl font-bold text-white relative overflow-hidden group"
+            onClick={() => handleClick('/login')}
           >
             <span className="relative z-10">Register Now</span>
             <motion.span 

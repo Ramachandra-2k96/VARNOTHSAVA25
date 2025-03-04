@@ -13,6 +13,16 @@ const transition = {
   restSpeed: 0.001,
 };
 
+interface MenuItemProps {
+  setActive: (item: string | null) => void;
+  active: string | null;
+  item: string;
+  href?: string;
+  direct?: boolean;
+  children?: React.ReactNode;
+  onNavigate?: (href: string) => void;
+}
+
 export const MenuItem = ({
   setActive,
   active,
@@ -20,14 +30,7 @@ export const MenuItem = ({
   href, // Direct link
   direct = false, // For direct links with no dropdown
   children,
-}: {
-  setActive: (item: string | null) => void;
-  active: string | null;
-  item: string;
-  href?: string;
-  direct?: boolean;
-  children?: React.ReactNode;
-}) => {
+}: MenuItemProps) => {
   return (
     <div
       onMouseEnter={() => {
@@ -100,20 +103,28 @@ export const Menu = ({
   );
 };
 
+interface ProductItemProps {
+  title: string;
+  description: string;
+  href: string;
+  src: string;
+  onNavigate: (href: string) => void;
+}
+
 export const ProductItem = ({
   title,
   description,
   href,
   src,
-}: {
-  title: string;
-  description: string;
-  href: string;
-  src: string;
-}) => {
+  onNavigate,
+}: ProductItemProps) => {
   return (
     <Link
       href={href}
+      onClick={(e) => {
+        e.preventDefault();
+        onNavigate(href);
+      }}
       className="flex space-x-3 items-center p-2 transition-all duration-300 rounded-md hover:bg-white/10"
     >
       <div className="relative overflow-hidden rounded-md">
@@ -136,7 +147,6 @@ export const ProductItem = ({
     </Link>
   );
 };
-
 
 export const HoveredLink = ({ children, ...rest }: any) => {
   return (

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Menu as MenuIcon, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function NavbarSection() {
   return (
@@ -15,6 +16,7 @@ export default function NavbarSection() {
 }
 
 function Navbar({ className }: { className?: string }) {
+  const router = useRouter();
   const [active, setActive] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -44,6 +46,27 @@ function Navbar({ className }: { className?: string }) {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleNavigation = (href: string) => {
+    // Check if target element exists on current page
+    const targetId = href.split('#')[1];
+    const element = document.getElementById(targetId);
+
+    if (element) {
+      // If element exists, smooth scroll to it
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    } else {
+      // If element doesn't exist, navigate to new page
+      router.push(href);
+    }
+  };
+
   return (
     <div className={cn("fixed top-10 inset-x-0 max-w-2xl mx-auto z-50", className)}>
       {isMobile ? (
@@ -66,38 +89,46 @@ function Navbar({ className }: { className?: string }) {
             <div className="fixed inset-0 bg-black/95 pt-16 px-4 overflow-y-auto min-h-screen">
               <div className="flex flex-col space-y-6 mt-4">
                 {/* Example: Direct Link (no accordion) */}
-                <MobileDirectLink href="#about" label="About" />
-                <MobileDirectLink href="#timeline" label="Time Line" />
+                <MobileDirectLink href="#about" label="About" onClick={closeMobileMenu} onNavigate={handleNavigation} />
+                <MobileDirectLink href="#timeline" label="Time Line" onClick={closeMobileMenu} onNavigate={handleNavigation} />
 
-                <MobileMenuItem title="Events">
+                <MobileMenuItem title="Events" onClose={closeMobileMenu}>
                   <div className="grid grid-cols-1 gap-6 py-2">
-                  <MobileProductItem
-                  title="Technical"
-                  href="/events/#tech"
-                  src="/images/main_event/tech.jpg"
-                  description="Showcase your technical prowess with coding challenges, hackathons, and innovative problem-solving events."
-                />
-                <MobileProductItem
-                  title="Cultural"
-                  href="/events/#cultural"
-                  src="/images/main_event/cultural.jpg"
-                  description="Celebrate creativity with music, dance, drama, and artistic showcases that bring cultures together."
-                />
-                <MobileProductItem
-                  title="General"
-                  href="/events/#general"
-                  src="/images/main_event/general.png"
-                  description="Engage in fun and thought-provoking competitions that test your wit, knowledge, and spontaneity."
-                />
-                <MobileProductItem
-                  title="Gaming"
-                  href="/events/#gaming"
-                  src="/images/main_event/game.png"
-                  description="Dive into the ultimate gaming battles with esports tournaments, arcade challenges, and strategy showdowns."
-                />
+                    <MobileProductItem
+                      title="Technical"
+                      href="/events/#tech"
+                      src="/images/main_event/tech.jpg"
+                      description="Showcase your technical prowess with coding challenges, hackathons, and innovative problem-solving events."
+                      onClick={closeMobileMenu}
+                      onNavigate={handleNavigation}
+                    />
+                    <MobileProductItem
+                      title="Cultural"
+                      href="/events/#cultural"
+                      src="/images/main_event/cultural.jpg"
+                      description="Celebrate creativity with music, dance, drama, and artistic showcases that bring cultures together."
+                      onClick={closeMobileMenu}
+                      onNavigate={handleNavigation}
+                    />
+                    <MobileProductItem
+                      title="General"
+                      href="/events/#general"
+                      src="/images/main_event/general.png"
+                      description="Engage in fun and thought-provoking competitions that test your wit, knowledge, and spontaneity."
+                      onClick={closeMobileMenu}
+                      onNavigate={handleNavigation}
+                    />
+                    <MobileProductItem
+                      title="Gaming"
+                      href="/events/#gaming"
+                      src="/images/main_event/game.png"
+                      description="Dive into the ultimate gaming battles with esports tournaments, arcade challenges, and strategy showdowns."
+                      onClick={closeMobileMenu}
+                      onNavigate={handleNavigation}
+                    />
                   </div>
                 </MobileMenuItem>
-                <MobileDirectLink href="/login" label="Login" />
+                <MobileDirectLink href="/login" label="Login" onClick={closeMobileMenu} onNavigate={handleNavigation} />
 
               </div>
             </div>
@@ -108,9 +139,9 @@ function Navbar({ className }: { className?: string }) {
         // Desktop Menu
         // ─────────────────────────────────────────────────────────────────
         <Menu setActive={setActive}>
-          <MenuItem direct href="#about" item="About" setActive={setActive} active={active} />
-          <MenuItem direct href="#timeline" item="Time Line" setActive={setActive} active={active} />
-          <MenuItem direct href="#gallery" item="Gallery" setActive={setActive} active={active} />
+          <MenuItem direct href="#about" item="About" setActive={setActive} active={active} onNavigate={handleNavigation} />
+          <MenuItem direct href="#timeline" item="Time Line" setActive={setActive} active={active} onNavigate={handleNavigation} />
+          <MenuItem direct href="#gallery" item="Gallery" setActive={setActive} active={active} onNavigate={handleNavigation} />
 
           <MenuItem setActive={setActive} active={active} item="Events">
             <div className="text-sm grid grid-cols-2 gap-10 p-4">
@@ -119,28 +150,32 @@ function Navbar({ className }: { className?: string }) {
                 href="/events/#tech"
                 src="/images/main_event/tech.jpg"
                 description="Showcase your technical prowess with coding challenges, hackathons, and innovative problem-solving events."
+                onNavigate={handleNavigation}
               />
               <ProductItem
                 title="Cultural"
                 href="/events/#cultural"
                 src="/images/main_event/cultural.jpg"
                 description="Celebrate creativity with music, dance, drama, and artistic showcases that bring cultures together."
+                onNavigate={handleNavigation}
               />
               <ProductItem
                 title="General"
                 href="/events/#general"
                 src="/images/main_event/general.png"
                 description="Engage in fun and thought-provoking competitions that test your wit, knowledge, and spontaneity."
+                onNavigate={handleNavigation}
               />
               <ProductItem
                 title="Gaming"
                 href="/events/#gaming"
                 src="/images/main_event/game.png"
                 description="Dive into the ultimate gaming battles with esports tournaments, arcade challenges, and strategy showdowns."
+                onNavigate={handleNavigation}
               />
             </div>
           </MenuItem>
-          <MenuItem direct href="/login" item="Login" setActive={setActive} active={active} />
+          <MenuItem direct href="/login" item="Login" setActive={setActive} active={active} onNavigate={handleNavigation} />
         </Menu>
       )}
     </div>
@@ -155,9 +190,11 @@ function Navbar({ className }: { className?: string }) {
 const MobileMenuItem = ({
   title,
   children,
+  onClose,
 }: {
   title: string;
   children: React.ReactNode;
+  onClose: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -179,9 +216,13 @@ const MobileMenuItem = ({
 const MobileDirectLink = ({
   href,
   label,
+  onClick,
+  onNavigate,
 }: {
   href: string;
   label: string;
+  onClick: () => void;
+  onNavigate: (href: string) => void;
 }) => {
   return (
     <div className="border-b border-white/10 pb-4">
@@ -189,6 +230,11 @@ const MobileDirectLink = ({
         href={href}
         className="block w-full text-left text-white font-medium py-2 
                    hover:bg-purple-800 rounded-lg transition-colors"
+        onClick={(e) => {
+          e.preventDefault();
+          onClick();
+          onNavigate(href);
+        }}
       >
         {label}
       </Link>
@@ -201,14 +247,26 @@ const MobileProductItem = ({
   description,
   href,
   src,
+  onClick,
+  onNavigate,
 }: {
   title: string;
   description: string;
   href: string;
   src: string;
+  onClick: () => void;
+  onNavigate: (href: string) => void;
 }) => {
   return (
-    <Link href={href} className="flex flex-col space-y-2">
+    <Link 
+      href={href} 
+      className="flex flex-col space-y-2" 
+      onClick={(e) => {
+        e.preventDefault();
+        onClick();
+        onNavigate(href);
+      }}
+    >
       <div className="flex items-center space-x-3">
         <Image
           src={src}
