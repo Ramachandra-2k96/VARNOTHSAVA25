@@ -43,7 +43,7 @@ export default function LoginForm() {
               id="email"
               placeholder="you@example.com"
               type="email"
-              className="border-gray-800 bg-gray-950 text-white placeholder:text-gray-500 focus:border-gray-600 focus:ring-gray-600 focus:ring-1 ring-0 focus:ring-offset-0"
+              className="bg-gray-950 text-white placeholder:text-gray-500 focus:border-gray-600 focus:ring-0 focus:ring-offset-0 outline-none"
             />
           </LabelInputContainer>
 
