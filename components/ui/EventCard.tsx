@@ -2,6 +2,7 @@ import React from 'react';
 import { DivideIcon as LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Tilt } from 'react-tilt';
+import { cn } from '@/lib/utils';
 
 interface EventCardProps {
   title: string;
@@ -9,6 +10,8 @@ interface EventCardProps {
   icon: any;
   delay: number;
   slug: string;
+  gradient: string;
+  className?: string;
 }
 
 const defaultTiltOptions = {
@@ -23,7 +26,7 @@ const defaultTiltOptions = {
   easing: "cubic-bezier(.03,.98,.52,.99)",
 };
 
-export function EventCard({ title, description, icon: Icon, delay, slug }: EventCardProps) {
+export function EventCard({ title, description, icon: Icon, delay, slug, gradient, className }: EventCardProps) {
   const handleClick = () => {
     window.location.href = `/events/#${slug}`;
   };
@@ -38,9 +41,12 @@ export function EventCard({ title, description, icon: Icon, delay, slug }: Event
       <Tilt options={defaultTiltOptions}>
         <div 
           onClick={handleClick}
-          className="relative group cursor-pointer bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 
-                   rounded-xl p-8 overflow-hidden transition-all duration-500 ease-out
-                   hover:shadow-[0_0_50px_rgba(139,92,246,0.4)]"
+          className={cn(
+            "relative group cursor-pointer bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900",
+            "rounded-xl p-8 overflow-hidden transition-all duration-500 ease-out",
+            "hover:shadow-[0_0_50px_rgba(139,92,246,0.4)]",
+            className
+          )}
         >
           {/* Animated background effects */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_50%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />

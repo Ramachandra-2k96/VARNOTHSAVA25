@@ -9,9 +9,19 @@ export default function TabsDemo() {
       title: "Product",
       value: "product",
       content: (
-        <div className="w-full overflow-hidden relative h-full rounded-2xl p-10 text-xl md:text-4xl font-bold text-white bg-gradient-to-br from-purple-700 to-violet-900">
-          <p>Product Tab</p>
-          <DummyContent />
+        <div className="relative w-full min-h-screen overflow-hidden text-xl md:text-4xl font-bold text-white">
+          {/* Background Image */}
+          <Image
+            src="/images/mouse-trail/3.jpg"
+            alt="dummy image"
+            fill
+            className="object-cover object-center"
+          />
+          {/* Foreground Content */}
+          <div className="relative z-10 p-10">
+            <p>Product Tab</p>
+            <h1 className="text-5xl mt-4">DANDIYA 2K24</h1>
+          </div>
         </div>
       ),
     },
@@ -19,9 +29,16 @@ export default function TabsDemo() {
       title: "Services",
       value: "services",
       content: (
-        <div className="w-full overflow-hidden relative h-full rounded-2xl p-10 text-xl md:text-4xl font-bold text-white bg-gradient-to-br from-purple-700 to-violet-900">
-          <p>Services tab</p>
-          <DummyContent />
+        <div className="relative w-full min-h-screen overflow-hidden text-xl md:text-4xl font-bold text-white">
+          <Image
+            src="/images/mouse-trail/3.jpg"
+            alt="dummy image"
+            fill
+            className="object-cover object-center"
+          />
+          <div className="relative z-10 p-10">
+            <p>Services Tab</p>
+          </div>
         </div>
       ),
     },
@@ -29,9 +46,16 @@ export default function TabsDemo() {
       title: "Playground",
       value: "playground",
       content: (
-        <div className="w-full overflow-hidden relative h-full rounded-2xl p-10 text-xl md:text-4xl font-bold text-white bg-gradient-to-br from-purple-700 to-violet-900">
-          <p>Playground tab</p>
-          <DummyContent />
+        <div className="relative w-full min-h-screen overflow-hidden text-xl md:text-4xl font-bold text-white">
+          <Image
+            src="/images/mouse-trail/3.jpg"
+            alt="dummy image"
+            fill
+            className="object-cover object-center"
+          />
+          <div className="relative z-10 p-10">
+            <p>Playground Tab</p>
+          </div>
         </div>
       ),
     },
@@ -39,9 +63,16 @@ export default function TabsDemo() {
       title: "Content",
       value: "content",
       content: (
-        <div className="w-full overflow-hidden relative h-full rounded-2xl p-10 text-xl md:text-4xl font-bold text-white bg-gradient-to-br from-purple-700 to-violet-900">
-          <p>Content tab</p>
-          <DummyContent />
+        <div className="relative w-full min-h-screen overflow-hidden text-xl md:text-4xl font-bold text-white">
+          <Image
+            src="/images/mouse-trail/3.jpg"
+            alt="dummy image"
+            fill
+            className="object-cover object-center"
+          />
+          <div className="relative z-10 p-10">
+            <p>Content Tab</p>
+          </div>
         </div>
       ),
     },
@@ -49,29 +80,24 @@ export default function TabsDemo() {
       title: "Random",
       value: "random",
       content: (
-        <div className="w-full overflow-hidden relative h-full rounded-2xl p-10 text-xl md:text-4xl font-bold text-white bg-gradient-to-br from-purple-700 to-violet-900">
-          <p>Random tab</p>
-          <DummyContent />
+        <div className="relative w-full min-h-screen overflow-hidden text-xl md:text-4xl font-bold text-white">
+          <Image
+            src="/images/mouse-trail/3.jpg"
+            alt="dummy image"
+            fill
+            className="object-cover object-center"
+          />
+          <div className="relative z-10 p-10">
+            <p>Random Tab</p>
+          </div>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="h-[20rem] md:h-[40rem] [perspective:1000px] relative b flex flex-col max-w-5xl mx-auto w-full  items-start justify-start my-40">
+    <div className="w-full min-h-screen">
       <Tabs tabs={tabs} />
     </div>
   );
 }
-
-const DummyContent = () => {
-  return (
-    <Image
-      src="/linear.webp"
-      alt="dummy image"
-      width="1000"
-      height="1000"
-      className="object-cover object-left-top h-[60%]  md:h-[90%] absolute -bottom-10 inset-x-0 w-[90%] rounded-xl mx-auto"
-    />
-  );
-};

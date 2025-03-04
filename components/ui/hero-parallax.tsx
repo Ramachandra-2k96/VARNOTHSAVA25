@@ -11,6 +11,7 @@ export const HeroParallax = ({
   products: {
     title: string
     thumbnail: string
+    key: string
   }[]
 }) => {
   // Memoize sliced arrays to avoid recalculating on every render
@@ -51,18 +52,18 @@ export const HeroParallax = ({
         }}
       >
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 mb-20">
-          {firstRow.map((product) => (
-            <ProductCard product={product} translate={translateX} key={product.title} />
-          ))}
+        {firstRow.map((product) => (
+          <ProductCard product={product} translate={translateX} key={product.key} />
+        ))}
         </motion.div>
         <motion.div className="flex flex-row mb-20 space-x-20">
           {secondRow.map((product) => (
-            <ProductCard product={product} translate={translateXReverse} key={product.title} />
+            <ProductCard product={product} translate={translateXReverse} key={product.key}/>
           ))}
         </motion.div>
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-20">
           {thirdRow.map((product) => (
-            <ProductCard product={product} translate={translateX} key={product.title} />
+            <ProductCard product={product} translate={translateX} key={product.key} />
           ))}
         </motion.div>
       </motion.div>
@@ -162,7 +163,7 @@ interface ProductProps {
 export const ProductCard = React.memo(({ product, translate }: ProductProps) => {
   return (
     <motion.div
-      style={{ x: translate, willChange: "transform" }} // Added will-change here as well
+      style={{ x: translate, willChange: "transform" }} 
       whileHover={{
         y: -20,
         transition: { duration: 0.3 },

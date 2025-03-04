@@ -1,30 +1,36 @@
 "use client"
 
 import { useEffect } from "react"
-import { motion, useAnimation } from "framer-motion"
+import { motion, useAnimation, useScroll, useTransform } from "framer-motion"
 import { Trophy, Award, Users } from "lucide-react"
 import { useInView } from "react-intersection-observer"
 
 export default function AboutSection() {
+  const { scrollY } = useScroll()
+  const opacity = useTransform(scrollY, [0, 300], [0, 1])
+  const scale = useTransform(scrollY, [0, 300], [0.8, 1])
+
   const stats = [
     {
       icon: Trophy,
-      title: "2 Lakh Cash Prize",
-      description: "Get your talent recognized here and win high cash prizes.",
+      title: "₹2,00,000",
+      description: "Total Prize Pool",
+      gradient: "from-rose-500 to-orange-500"
     },
     {
-      icon: Award,
-      title: "30+ Competitions",
-      description: "Competitions are held in each different categories to bring out the hidden talents in you.",
+      icon: Award, 
+      title: "30+ Events",
+      description: "Tech & Cultural",
+      gradient: "from-violet-500 to-purple-500"
     },
     {
       icon: Users,
-      title: "Professional Judges",
-      description: "All the competitions are judged by highly qualified and experienced individuals.",
+      title: "Industry Experts",
+      description: "Professional Judges",
+      gradient: "from-cyan-500 to-blue-500"
     },
   ]
 
-  // Animation controls for scroll reveal
   const controls = useAnimation()
   const [ref, inView] = useInView({
     triggerOnce: false,
@@ -37,144 +43,171 @@ export default function AboutSection() {
     }
   }, [controls, inView])
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        damping: 15,
-        stiffness: 100
-      }
-    }
-  }
-
   return (
-    <section id="about" className="relative py-24 bg-gradient-to-b from-black to-gray-900 overflow-hidden">
-      {/* Improved background with subtle texture */}
-      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_rgba(120,_81,_169,_0.3)_0%,_rgba(0,_0,_0,_0)_60%)]"></div>
-      
-      {/* Enhanced accent lines with better contrast */}
-      <div className="absolute left-0 top-0 w-full h-px bg-gradient-to-r from-transparent via-purple-600/30 to-transparent"></div>
-      <div className="absolute left-0 bottom-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-600/30 to-transparent"></div>
-      
-      {/* Decorative particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
-          <div 
+    <motion.section 
+      ref={ref}
+      style={{ opacity, scale }}
+      className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden"
+    >
+      {/* Improved animated gradient background with better blending */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute w-full h-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-purple-800/20 via-transparent to-transparent animate-pulse-slow"></div>
+        <div className="absolute w-full h-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-800/20 via-transparent to-transparent animate-pulse-slow delay-2000"></div>
+        <div className="absolute w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-900/10 via-transparent to-transparent animate-pulse-slow delay-4000"></div>
+      </div>
+
+      {/* Enhanced floating particles with different sizes */}
+      <div className="absolute inset-0">
+        {[...Array(50)].map((_, i) => (
+          <motion.div
             key={i}
-            className="absolute w-1 h-1 rounded-full bg-purple-500/30"
+            className={`absolute rounded-full ${i % 3 === 0 ? 'h-1 w-1 bg-white/80' : i % 3 === 1 ? 'h-2 w-2 bg-purple-400/50' : 'h-3 w-3 bg-blue-400/30'}`}
             style={{
-              top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
-              animation: `pulse ${3 + Math.random() * 4}s infinite ${Math.random() * 5}s`
+              top: `${Math.random() * 100}%`,
             }}
-          ></div>
+            animate={{
+              y: [0, -Math.random() * 30 - 20, 0],
+              x: [0, Math.random() * 20 - 10, 0],
+              scale: [0, Math.random() * 0.5 + 0.5, 0],
+              opacity: [0, 0.8, 0]
+            }}
+            transition={{
+              duration: Math.random() * 5 + 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: Math.random() * 5
+            }}
+          />
         ))}
       </div>
-      
-      <motion.div 
-        ref={ref}
-        variants={containerVariants}
-        initial="hidden"
-        animate={controls}
-        className="max-w-7xl mx-auto px-6 sm:px-8 relative z-10"
-      >
-        {/* Main Title - Enhanced with better gradient */}
-        <motion.div variants={itemVariants} className="mb-12 text-center">
-          <h2 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 text-transparent bg-clip-text leading-tight inline-block">
-            Varnothsava&apos;25
-          </h2>
-          <div className="h-1 w-32 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto mt-4 rounded-full"></div>
+
+      {/* Content with improved responsive layout */}
+      <div className="container mx-auto px-4 sm:px-6 py-16 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          animate={controls}
+          variants={{
+            visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
+          }}
+          className="text-center mb-12 sm:mb-20"
+        >
+          {/* Responsive title with better scaling */}
+          <h1 className="text-4xl sm:text-4xl md:text-8xl lg:text-9xl font-black tracking-tighter">
+            <motion.span 
+              className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 inline-block"
+              animate={{ 
+                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+              }}
+              transition={{ 
+                duration: 10, 
+                repeat: Infinity,
+                ease: "linear" 
+              }}
+              style={{ backgroundSize: '200% 200%' }}
+            >
+              VARNOTHSAVA
+            </motion.span>
+            <span className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-white ml-1 sm:ml-2 inline-block">25</span>
+          </h1>
         </motion.div>
 
-        {/* Description Sections - Improved layout and typography */}
-        <div className="space-y-6 max-w-3xl mx-auto mb-16 relative">
-          {/* Subtle side decorations */}
-          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-px h-32 bg-gradient-to-b from-transparent via-purple-500/20 to-transparent hidden lg:block"></div>
-          <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-px h-32 bg-gradient-to-b from-transparent via-purple-500/20 to-transparent hidden lg:block"></div>
-          
-          <motion.p 
-            variants={itemVariants}
-            className="text-lg md:text-xl text-gray-100 text-center leading-relaxed"
-          >
-            "Varnothsava" has been the flagship intercollegiate techno-cultural fest of SMVITM. Through the years, it has been a great platform for students to participate, collaborate and compete with their peers, learning and enjoying in the process.
-          </motion.p>
-
-          <motion.p
-            variants={itemVariants}
-            className="text-lg md:text-xl text-gray-200 text-center leading-relaxed"
-          >
-            The perfect combination of technical and cultural events along with the vibrant enthusiasm of the participants creates a sportive environment.
-          </motion.p>
-
-          <motion.p
-            variants={itemVariants}
-            className="text-lg md:text-xl text-gray-100 text-center leading-relaxed"
-          >
-            This year too, Varnothsava retains its charm and essence. With technical events testing and challenging the technical enthusiasts and the cultural events drawing in all the art lovers, Varnothsava surely provokes hidden talents and blends it all into a dynamic mix of varied hues.
-          </motion.p>
-        </div>
-
-        {/* Stats Grid - Completely redesigned cards */}
-        <motion.div 
-          variants={itemVariants}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8"
-        >
+        {/* Improved cards layout with better spacing for mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.title}
-              whileHover={{ y: -5 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+              initial={{ opacity: 0, y: 50 }}
+              animate={controls}
+              variants={{
+                visible: { 
+                  opacity: 1, 
+                  y: 0, 
+                  transition: { 
+                    duration: 0.5,
+                    delay: index * 0.2 
+                  } 
+                }
+              }}
+              whileHover={{ scale: 1.03, rotate: 0.5 }}
               className="relative group"
             >
-              {/* Enhanced glow effect */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600/40 to-indigo-600/40 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-              
-              {/* Redesigned card with improved styling */}
-              <div className="relative bg-gray-900/80 backdrop-blur-sm border border-purple-500/10 rounded-xl p-8 h-full flex flex-col items-center text-center transition-all duration-300 group-hover:border-purple-500/30">
-                {/* Icon container with better glow effect */}
-                <div className="mb-5 relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-indigo-500/30 rounded-full blur-md opacity-30 group-hover:opacity-100 transition-opacity duration-500 scale-150"></div>
-                  <motion.div 
-                    whileHover={{ rotate: 12, scale: 1.1 }} 
-                    transition={{ type: 'spring', stiffness: 300 }}
-                    className="relative bg-gray-800/80 p-4 rounded-full border border-purple-500/20"
-                  >
-                    <stat.icon className="w-8 h-8 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" />
-                  </motion.div>
-                </div>
-                
-                {/* Title with better gradient effect */}
-                <h3 className="text-2xl font-bold mb-3 text-white group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-purple-400 group-hover:text-transparent group-hover:bg-clip-text transition-all duration-300">{stat.title}</h3>
-                
-                {/* Description with improved readability */}
-                <p className="text-gray-300 leading-relaxed">{stat.description}</p>
+              <div className={`absolute -inset-0.5 bg-gradient-to-r ${stat.gradient} rounded-xl opacity-50 blur-sm group-hover:opacity-100 group-hover:blur transition duration-300`} />
+              <div className="relative bg-black/90 backdrop-blur-sm rounded-lg p-6 sm:p-8 h-full border border-white/10 flex flex-col items-center sm:items-start">
+                <motion.div 
+                  className="mb-4 sm:mb-6"
+                  whileHover={{ rotate: 360, scale: 1.2 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <stat.icon className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+                </motion.div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">{stat.title}</h3>
+                <p className="text-gray-400 text-base sm:text-lg">{stat.description}</p>
               </div>
             </motion.div>
           ))}
-        </motion.div>
-      </motion.div>
+        </div>
 
-      {/* Global styles for animations */}
+        {/* Enhanced call-to-action with better mobile spacing */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={controls}
+          variants={{
+            visible: { 
+              opacity: 1, 
+              y: 0, 
+              transition: { 
+                duration: 0.5,
+                delay: 0.6 
+              } 
+            }
+          }}
+          className="text-center mt-12 sm:mt-20"
+        >
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed px-4">
+            Experience SMVITM's premier techno-cultural fest where innovation meets creativity. Join us for an unforgettable celebration of talent and technology.
+          </p>
+          
+          {/* Enhanced button with animation and glow effect */}
+          <motion.button
+            whileHover={{ 
+              scale: 1.05,
+              boxShadow: "0 0 25px 0 rgba(168, 85, 247, 0.4)"
+            }}
+            whileTap={{ scale: 0.95 }}
+            className="mt-8 sm:mt-10 px-8 sm:px-12 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-lg sm:text-xl font-bold text-white relative overflow-hidden group"
+          >
+            <span className="relative z-10">Register Now</span>
+            <motion.span 
+              className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            />
+            <motion.span 
+              className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-md opacity-0 group-hover:opacity-70 transition-opacity duration-300 z-0"
+            />
+          </motion.button>
+        </motion.div>
+      </div>
+
+      {/* Enhanced animations with smoother transitions */}
       <style jsx global>{`
+        .animate-pulse-slow {
+          animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .delay-2000 {
+          animation-delay: 2s;
+        }
+        .delay-4000 {
+          animation-delay: 4s;
+        }
         @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 0.3; }
-          50% { transform: scale(2); opacity: 0.7; }
+          0%, 100% {
+            opacity: 0.1;
+          }
+          50% {
+            opacity: 0.3;
+          }
         }
       `}</style>
-    </section>
+    </motion.section>
   )
 }

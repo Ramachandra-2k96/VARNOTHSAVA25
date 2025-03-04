@@ -27,24 +27,12 @@ export default function Footer() {
           <div>
             <h3 className="text-xl font-serif font-semibold mb-4">Contact Us</h3>
             <p className="text-sm mb-2 text-gray-300">
-              <span className="font-medium">Faculty Coordinator</span> - Mr. SACHIN PRABHU :{" "}
+              <span className="font-medium">Faculty Coordinator</span> -XXX :{" "}
               <a
-                href="tel:9964027565"
+                href="tel:XXXX"
                 className="transition-colors duration-300 hover:text-gray-400"
               >
-                9964027565
-              </a>
-            </p>
-            <p className="text-sm mb-1 text-gray-300">
-              <span className="font-medium">Student Coordinators</span>:
-            </p>
-            <p className="text-sm ml-4 mb-1 text-gray-300">
-              Mr. Ramachandra Udupa:{" "}
-              <a
-                href="tel:8722739363"
-                className="transition-colors duration-300 hover:text-gray-400"
-              >
-                8867004280
+                XXX
               </a>
             </p>
           </div>
