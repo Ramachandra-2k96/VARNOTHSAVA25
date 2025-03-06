@@ -67,7 +67,7 @@ export default function AboutSection() {
       ref={ref}
       style={{ opacity, scale }}
       className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden"
-      id = "about"
+      id="about"
     >
       {/* Improved animated gradient background with better blending */}
       <div className="absolute inset-0 overflow-hidden">
@@ -134,38 +134,41 @@ export default function AboutSection() {
 
         {/* Improved cards layout with better spacing for mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 50 }}
-              animate={controls}
-              variants={{
-                visible: { 
-                  opacity: 1, 
-                  y: 0, 
-                  transition: { 
-                    duration: 0.5,
-                    delay: index * 0.2 
-                  } 
-                }
-              }}
-              whileHover={{ scale: 1.03, rotate: 0.5 }}
-              className="relative group"
-            >
-              <div className={`absolute -inset-0.5 bg-gradient-to-r ${stat.gradient} rounded-xl opacity-50 blur-sm group-hover:opacity-100 group-hover:blur transition duration-300`} />
-              <div className="relative bg-black/90 backdrop-blur-sm rounded-lg p-6 sm:p-8 h-full border border-white/10 flex flex-col items-center sm:items-start">
-                <motion.div 
-                  className="mb-4 sm:mb-6"
-                  whileHover={{ rotate: 360, scale: 1.2 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <stat.icon className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-                </motion.div>
-                <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">{stat.title}</h3>
-                <p className="text-gray-400 text-base sm:text-lg">{stat.description}</p>
-              </div>
-            </motion.div>
-          ))}
+          {stats.map((stat, index) => {
+            const Icon = stat.icon; // Ensure the icon is a valid component
+            return (
+              <motion.div
+                key={stat.title}
+                initial={{ opacity: 0, y: 50 }}
+                animate={controls}
+                variants={{
+                  visible: { 
+                    opacity: 1, 
+                    y: 0, 
+                    transition: { 
+                      duration: 0.5,
+                      delay: index * 0.2 
+                    } 
+                  }
+                }}
+                whileHover={{ scale: 1.03, rotate: 0.5 }}
+                className="relative group"
+              >
+                <div className={`absolute -inset-0.5 bg-gradient-to-r ${stat.gradient} rounded-xl opacity-50 blur-sm group-hover:opacity-100 group-hover:blur transition duration-300`} />
+                <div className="relative bg-black/90 backdrop-blur-sm rounded-lg p-6 sm:p-8 h-full border border-white/10 flex flex-col items-center sm:items-start">
+                  <motion.div 
+                    className="mb-4 sm:mb-6"
+                    whileHover={{ rotate: 360, scale: 1.2 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <Icon className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+                  </motion.div>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">{stat.title}</h3>
+                  <p className="text-gray-400 text-base sm:text-lg">{stat.description}</p>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Enhanced call-to-action with better mobile spacing */}
