@@ -1,80 +1,96 @@
-"use client"
+"use client";
 
-import type React from "react"
-import Link from "next/link"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
-import { IconBrandGoogle, IconHome } from "@tabler/icons-react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
-import { auth } from "@/lib/firebase"
-import toast from "react-hot-toast"
+import type React from "react";
+import Link from "next/link";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { IconBrandGoogle, IconHome } from "@tabler/icons-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import toast from "react-hot-toast";
 
 export default function LoginForm() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-  })
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
-    })
-  }
+    });
+  };
 
   const handleEmailLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-  
+
     try {
+      // Basic validation
+      if (!formData.email || !formData.password) {
+        toast.error("Please fill in all fields");
+        setIsLoading(false);
+        return;
+      }
+
       const userCredential = await signInWithEmailAndPassword(
         auth,
         formData.email,
         formData.password
       );
       const user = userCredential.user;
-  
-      // Get Firebase token
       const token = await user.getIdToken();
-  
+
+      // Set the auth-token cookie
+      document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Strict`;
+
+      // Set the user_info cookie with proper encoding
+      const userInfo = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || `${formData.email.split("@")[0]}`
+      };
+      document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=3600; SameSite=Strict`;
+
       // Send token to session endpoint
-      const sessionResponse = await fetch('/api/auth/session', {
-        method: 'POST',
+      const sessionResponse = await fetch("/api/auth/session", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ token }),
       });
-  
+
       if (!sessionResponse.ok) {
-        throw new Error('Failed to create session');
+        throw new Error("Failed to create session");
       }
-  
+
       const { uid } = await sessionResponse.json();
-  
-      // Store or update user data in MongoDB
+
+      // Update user data in MongoDB
       const userResponse = await fetch(`/api/users/${uid}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: user.email,
-          displayName: user.displayName,
+          displayName: user.displayName || `${formData.email.split("@")[0]}`,
           photoURL: user.photoURL,
           lastLogin: new Date().toISOString(),
         }),
       });
-  
+
       if (!userResponse.ok) {
-        console.error('Failed to update user data in MongoDB');
+        console.error("Failed to update user data in MongoDB");
       }
-  
+
       toast.success("Successfully logged in!");
       router.push("/dashboard");
     } catch (error: any) {
@@ -86,44 +102,61 @@ export default function LoginForm() {
         case "auth/wrong-password":
           toast.error("Invalid password.");
           break;
+        case "auth/invalid-email":
+          toast.error("Invalid email address.");
+          break;
+        case "auth/too-many-requests":
+          toast.error("Too many attempts. Please try again later.");
+          break;
         default:
-          toast.error("An error occurred. Please try again.");
-          console.error('Login error:', error);
+          toast.error(error.message || "An error occurred. Please try again.");
+          console.error("Login error:", error);
       }
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     const provider = new GoogleAuthProvider();
-  
+
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const token = await user.getIdToken();
-  
+
+      // Set the auth-token cookie
+      document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Strict`;
+
+      // Set the user_info cookie with proper encoding
+      const userInfo = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || `${formData.email.split("@")[0]}`
+      };
+      document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=3600; SameSite=Strict`;
+
       // Send token to session endpoint
-      const sessionResponse = await fetch('/api/auth/session', {
-        method: 'POST',
+      const sessionResponse = await fetch("/api/auth/session", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ token }),
       });
-  
+
       if (!sessionResponse.ok) {
-        throw new Error('Failed to create session');
+        throw new Error("Failed to create session");
       }
-  
+
       const { uid } = await sessionResponse.json();
-  
-      // Store or update user data in MongoDB
+
+      // Update user data in MongoDB
       const userResponse = await fetch(`/api/users/${uid}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: user.email,
@@ -132,25 +165,27 @@ export default function LoginForm() {
           lastLogin: new Date().toISOString(),
         }),
       });
-  
+
       if (!userResponse.ok) {
-        console.error('Failed to update user data in MongoDB');
+        console.error("Failed to update user data in MongoDB");
       }
-  
+
       toast.success("Successfully logged in with Google!");
       router.push("/dashboard");
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') {
+      if (error.code === "auth/popup-closed-by-user") {
         toast.error("Login cancelled.");
+      } else if (error.code === "auth/popup-blocked") {
+        toast.error("Popup blocked. Please allow popups and try again.");
       } else {
-        toast.error("Failed to login with Google.");
-        console.error('Google login error:', error);
+        toast.error(error.message || "Failed to login with Google.");
+        console.error("Google login error:", error);
       }
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-black px-4 py-8 md:px-8 lg:px-12">
       <div className="relative w-full max-w-md rounded-2xl bg-black/95 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
@@ -184,7 +219,7 @@ export default function LoginForm() {
               value={formData.email}
               onChange={handleInputChange}
               disabled={isLoading}
-              className="bg-gray-950 text-white placeholder:text-gray-500 focus:border-gray-600 focus:ring-0 focus:ring-offset-0 outline-none"
+              className="border-gray-800 bg-gray-950 text-white placeholder:text-gray-500 focus:border-gray-600 focus:ring-gray-600 focus:ring-1 ring-0 focus:ring-offset-0"
             />
           </LabelInputContainer>
 
@@ -193,7 +228,10 @@ export default function LoginForm() {
               <Label htmlFor="password" className="text-gray-200">
                 Password
               </Label>
-              <Link href="/forgot-password" className="text-sm text-gray-400 hover:text-white">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-gray-400 hover:text-white"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -219,7 +257,9 @@ export default function LoginForm() {
 
           <div className="relative flex items-center justify-center">
             <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent" />
-            <span className="relative bg-black px-4 text-sm text-gray-500">or continue with</span>
+            <span className="relative bg-black px-4 text-sm text-gray-500">
+              or continue with
+            </span>
           </div>
 
           <button
@@ -229,20 +269,23 @@ export default function LoginForm() {
             disabled={isLoading}
           >
             <IconBrandGoogle className="h-5 w-5" />
-            <span>Sign in with Google</span>
+            <span>{isLoading ? "Processing..." : "Sign in with Google"}</span>
             <BottomGradient />
           </button>
 
           <p className="text-center text-sm text-gray-400">
-            Don't have an account?{" "}
-            <Link href="/signup" className="font-medium text-white underline-offset-4 hover:underline">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/signup"
+              className="font-medium text-white underline-offset-4 hover:underline"
+            >
               Sign up
             </Link>
           </p>
         </form>
       </div>
     </div>
-  )
+  );
 }
 
 const BottomGradient = () => {
@@ -251,16 +294,15 @@ const BottomGradient = () => {
       <span className="absolute inset-x-0 -bottom-px h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition-all duration-500 group-hover/btn:opacity-100" />
       <span className="absolute inset-x-10 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 blur-sm transition-all duration-500 group-hover/btn:opacity-100" />
     </>
-  )
-}
+  );
+};
 
 const LabelInputContainer = ({
   children,
   className,
 }: {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }) => {
-  return <div className={cn("flex flex-col space-y-2", className)}>{children}</div>
-}
-
+  return <div className={cn("flex flex-col space-y-2", className)}>{children}</div>;
+};

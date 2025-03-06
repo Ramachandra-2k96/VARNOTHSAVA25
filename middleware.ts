@@ -3,12 +3,13 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const session = request.cookies.get('session')
+  const authToken = request.cookies.get('auth-token')
+  const userInfo = request.cookies.get('user_info')
   
   // Protect dashboard and other authenticated routes
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    // Simply check if the session cookie exists
-    // The actual verification will happen on the server side in your API routes or page
-    if (!session) {
+    // Check if any of the authentication cookies exist
+    if (!session && !authToken && !userInfo) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }

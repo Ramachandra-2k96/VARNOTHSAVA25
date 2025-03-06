@@ -95,7 +95,7 @@ export default function SignupFormDemo() {
       toast.success("Account created successfully!")
       window.location.href = "/dashboard"
     } catch (error: any) {
-      // Handle specific Firebase errors
+      // Enhanced Firebase error handling
       const errorCode = error?.code
       switch (errorCode) {
         case 'auth/email-already-in-use':
@@ -110,8 +110,20 @@ export default function SignupFormDemo() {
         case 'auth/weak-password':
           toast.error("Password is too weak. Please use at least 6 characters")
           break
+        case 'auth/too-many-requests':
+          toast.error("Too many failed attempts. Please try again later or reset your password.")
+          break
+        case 'auth/network-request-failed':
+          toast.error("Network error. Please check your internet connection.")
+          break
         default:
-          toast.error(error.message || "Failed to create account")
+          console.error("Signup error:", error)
+          toast.error(error.message || "An unexpected error occurred. Please try again later.")
+      }
+
+      // Add error handling for MongoDB save
+      if (error.message === 'Failed to save user data') {
+        toast.error("Account created but failed to save additional details. Please contact support.")
       }
     }
   }
@@ -268,4 +280,3 @@ const LabelInputContainer = ({
 }) => {
   return <div className={cn("flex flex-col space-y-2", className)}>{children}</div>
 }
-
