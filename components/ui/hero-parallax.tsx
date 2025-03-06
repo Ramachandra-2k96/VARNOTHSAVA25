@@ -14,7 +14,13 @@ export const HeroParallax = ({
     key: string
   }[]
 }) => {
-  // Memoize sliced arrays to avoid recalculating on every render
+  // Add client-side only rendering
+  const [isMounted, setIsMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const firstRow = React.useMemo(() => products.slice(0, 5), [products])
   const secondRow = React.useMemo(() => products.slice(5, 10), [products])
   const thirdRow = React.useMemo(() => products.slice(10, 15), [products])
@@ -25,8 +31,7 @@ export const HeroParallax = ({
     offset: ["start start", "end start"],
   })
 
-  // Adjusted spring config for smoother animations
-  const springConfig = { stiffness: 100, damping: 30 } // Removed bounce for less jitter
+  const springConfig = { stiffness: 100, damping: 30 }
 
   const translateX = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1000]), springConfig)
   const translateXReverse = useSpring(useTransform(scrollYProgress, [0, 1], [0, -1000]), springConfig)
@@ -35,11 +40,14 @@ export const HeroParallax = ({
   const rotateZ = useSpring(useTransform(scrollYProgress, [0, 0.2], [20, 0]), springConfig)
   const translateY = useSpring(useTransform(scrollYProgress, [0, 0.2], [-700, 500]), springConfig)
 
+  // Return null during SSR
+  if (!isMounted) return null
+
   return (
     <div
       ref={ref}
       className="h-[300vh] py-40 overflow-hidden antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d] bg-black"
-      style={{ willChange: "transform" }} // Hint browser for GPU acceleration
+      style={{ willChange: "transform" }}
     >
       <Header />
       <motion.div
@@ -52,13 +60,13 @@ export const HeroParallax = ({
         }}
       >
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 mb-20">
-        {firstRow.map((product) => (
-          <ProductCard product={product} translate={translateX} key={product.key} />
-        ))}
+          {firstRow.map((product) => (
+            <ProductCard product={product} translate={translateX} key={product.key} />
+          ))}
         </motion.div>
         <motion.div className="flex flex-row mb-20 space-x-20">
           {secondRow.map((product) => (
-            <ProductCard product={product} translate={translateXReverse} key={product.key}/>
+            <ProductCard product={product} translate={translateXReverse} key={product.key} />
           ))}
         </motion.div>
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-20">
@@ -70,6 +78,7 @@ export const HeroParallax = ({
     </div>
   )
 }
+
 
 export const Header = () => {
   const [text] = useTypewriter({
