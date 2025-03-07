@@ -1,17 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from 'next/navigation';
 import { toast } from "react-hot-toast";
+import Image from "next/image";
+import { useOutsideClick } from "@/hooks/use-outside-click";
 
 interface Event {
   _id: string;
-  name: string;
+  id: string;
+  title: string;
   description: string;
-  points: number;
-  date: string;
+  tag: string;
+  src: string;
+  ctaText: string;
+  ctaLink: string;
+  content: string;
+  password: string;
 }
+
+type Tag = {
+  id: string;
+  name: string;
+};
 
 export default function EventsPage() {
   const router = useRouter();
@@ -22,6 +34,13 @@ export default function EventsPage() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Event card state
+  const [active, setActive] = useState<Event | null>(null);
+  const [filter, setFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 4;
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -35,7 +54,15 @@ export default function EventsPage() {
         const data = await response.json();
 
         if (data.success) {
-          setEvents(data.events);
+          // Add default src if missing
+          const eventsWithDefaults = data.events.map((event: Event) => ({
+            ...event,
+            src: event.src || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070",
+            ctaText: event.ctaText || "Know More",
+            ctaLink: event.ctaLink || "#register",
+            tag: event.tag || "technical"
+          }));
+          setEvents(eventsWithDefaults);
         } else {
           setError(data.message || 'Failed to fetch events');
         }
@@ -48,6 +75,26 @@ export default function EventsPage() {
 
     fetchEvents();
   }, []);
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setActive(null);
+      }
+    }
+
+    document.body.style.overflow = active ? "hidden" : "auto";
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [active]);
+
+  useOutsideClick(ref, () => setActive(null));
 
   const handleEventClick = (eventId: string) => {
     setSelectedEvent(eventId);
@@ -79,117 +126,482 @@ export default function EventsPage() {
         router.push(`/1e54615a1b51516d699d55bfd9407ffd/events/${selectedEvent}/admin`);
       } else {
         toast.error('Incorrect password');
-        setIsSubmitting(false); // Reset submission state on error
       }
     } catch (error) {
       toast.error('Failed to authenticate');
-      setIsSubmitting(false); // Reset submission state on error
+    } finally {
+      setIsSubmitting(false); // Reset submission state
     }
+  };
+
+  // Filter events based on selected tag
+  const filteredEvents = filter === "all" 
+    ? events 
+    : events.filter(event => event.tag === filter);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+  const indexOfLastEvent = currentPage * eventsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+
+  // Get tag color class
+  const getTagColorClass = (tag: string) => {
+    switch (tag) {
+      case "technical":
+        return "bg-blue-900/40 text-blue-300 border border-blue-700/30";
+      case "cultural":
+        return "bg-purple-900/40 text-purple-300 border border-purple-700/30";
+      case "business":
+        return "bg-amber-900/40 text-amber-300 border border-amber-700/30";
+      default:
+        return "bg-gray-800/40 text-gray-300 border border-gray-700/30";
+    }
+  };
+
+  // Animation variants for consistent animations
+  const pageTransition = {
+    type: "tween",
+    ease: "easeInOut",
+    duration: 0.3
+  };
+
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: pageTransition },
+    exit: { opacity: 0, y: 20, transition: pageTransition }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 p-4 flex items-center justify-center">
-        <div className="text-white">Loading events...</div>
+      <div className="min-h-screen bg-black p-4 flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-white flex flex-col items-center"
+        >
+          <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="mt-4 text-lg font-medium">Loading events...</span>
+        </motion.div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 p-4 flex items-center justify-center">
-        <div className="text-white">Error: {error}</div>
+      <div className="min-h-screen bg-black p-4 flex items-center justify-center">
+        <div className="text-white bg-red-900/20 backdrop-blur-sm p-6 rounded-xl border border-red-700/40 max-w-md">
+          <h2 className="text-xl font-bold mb-2">Error</h2>
+          <p>{error}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-black to-gray-900 text-gray-100 p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        <motion.h1 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-4xl md:text-5xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500"
+        >
+          Event Management
+        </motion.h1>
+        
+        {/* Filter Navigation */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gray-900 rounded-xl shadow-lg overflow-hidden mb-4 border border-purple-500/30"
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex flex-wrap justify-center gap-3 mb-8"
         >
-          <div className="bg-gradient-to-r from-purple-800 to-indigo-800 p-4">
-            <h2 className="text-xl font-bold text-white">Event Management</h2>
-            <div className="text-white/70 text-sm mt-1">
-              Total Events: {events.length}
-            </div>
-          </div>
-          
-          <div className="p-4">
-            {events.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">
-                No events found.
-              </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2">
-                {events.map((event) => (
-                  <motion.div
-                    key={event._id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleEventClick(event._id)}
-                    className="border border-purple-500/30 rounded-lg p-4 cursor-pointer hover:bg-gray-800/50 transition-colors"
-                  >
-                    <h4 className="font-bold text-white">{event.name}</h4>
-                    <p className="text-sm text-gray-300 mb-2">{event.description}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-400">{event.date}</span>
-                      <span className="bg-purple-900/50 text-purple-200 text-xs px-2 py-1 rounded-full">
-                        {event.points} points
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </div>
+          {tags.map((tag, index) => (
+            <motion.button
+              key={tag.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: 1, 
+                y: 0,
+                transition: { delay: 0.2 + (index * 0.1) }
+              }}
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
+              whileTap={{ y: 0 }}
+              onClick={() => setFilter(tag.id)}
+              className={`px-6 py-2 rounded-full font-medium transition-all ${
+                filter === tag.id
+                  ? "bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-lg shadow-teal-500/20"
+                  : "bg-gray-900/80 backdrop-blur-sm text-gray-300 hover:bg-gray-800 border border-gray-800/50 hover:border-teal-500/30 shadow-md shadow-black/20"
+              }`}
+            >
+              {tag.name}
+            </motion.button>
+          ))}
         </motion.div>
+
+        <AnimatePresence>
+          {active && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.3 } }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm h-full w-full z-10"
+            />
+          )}
+        </AnimatePresence>
+        
+        <AnimatePresence mode="wait">
+          {active ? (
+            <div className="fixed inset-0 flex items-center justify-center z-[100] p-4">
+              <motion.button
+                key={`button-${active.title}`}
+                layout
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.5,
+                  transition: { duration: 0.3 },
+                }}
+                className="flex absolute top-4 right-4 items-center justify-center bg-gray-900/80 backdrop-blur-md rounded-full h-12 w-12 z-[110] border border-gray-700/40 hover:border-red-500/50 shadow-lg transition-all hover:bg-red-900/20"
+                onClick={() => setActive(null)}
+              >
+                <CloseIcon />
+              </motion.button>
+              
+              <motion.div
+                layoutId={`card-${active.title}`}
+                ref={ref}
+                initial={{ scale: 0.95, opacity: 0.5 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ 
+                  scale: 0.95, 
+                  opacity: 0, 
+                  transition: { duration: 0.3 } 
+                }}
+                transition={{ duration: 0.3 }}
+                className="w-full max-w-[600px] h-[85vh] md:h-auto md:max-h-[85vh] flex flex-col bg-gray-900/60 backdrop-blur-xl border border-gray-800/50 rounded-3xl overflow-hidden shadow-2xl relative"
+                style={{
+                  boxShadow: "0 0 40px rgba(0, 0, 0, 0.5), 0 0 100px rgba(0, 0, 0, 0.3)"
+                }}
+              >
+                <motion.div layoutId={`image-${active.title}`}>
+                  <div className="relative w-full h-48 lg:h-72">
+                    <Image
+                      priority
+                      fill
+                      src={active.src}
+                      alt={active.title}
+                      className="rounded-tr-3xl rounded-tl-3xl object-cover object-center"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
+                    <motion.span
+                      layoutId={`tag-${active.title}`}
+                      className={`absolute top-4 left-4 px-3 py-1 text-xs font-semibold rounded-full shadow-md backdrop-blur-md ${getTagColorClass(active.tag)}`}
+                    >
+                      {active.tag.charAt(0).toUpperCase() + active.tag.slice(1)}
+                    </motion.span>
+                  </div>
+                </motion.div>
+
+                <div className="flex flex-col overflow-hidden flex-grow">
+                  <div className="flex justify-between items-start p-4 md:p-6">
+                    <div className="flex-1 pr-2">
+                      <motion.h3
+                        layoutId={`title-${active.title}`}
+                        className="font-bold text-xl md:text-2xl mb-2 text-white"
+                      >
+                        {active.title}
+                      </motion.h3>
+                      <motion.p
+                        layoutId={`description-${active.description}`}
+                        className="text-gray-400 text-sm md:text-base"
+                      >
+                        {active.description}
+                      </motion.p>
+                    </div>
+
+                    <motion.button
+                      layoutId={`button-${active.title}`}
+                      onClick={() => {
+                        setActive(null);
+                        handleEventClick(active._id);
+                      }}
+                      className="px-4 py-2 md:px-6 md:py-3 text-sm rounded-full font-bold whitespace-nowrap bg-gradient-to-r from-teal-500 to-blue-500 text-white hover:from-teal-400 hover:to-blue-400 transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-1"
+                    >
+                      Manage Event
+                    </motion.button>
+                  </div>
+                  
+                  {/* Improved mobile scrolling area - increased height and better padding */}
+                  <div className="px-4 md:px-6 flex-grow overflow-auto custom-scrollbar" 
+                       style={{ 
+                         height: "calc(85vh - 48px - 120px - 48px)",
+                         maxHeight: "100%", 
+                         WebkitOverflowScrolling: "touch" 
+                       }}>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-gray-300 text-sm md:text-base pb-6 md:pb-8 prose prose-invert prose-sm md:prose-base max-w-none"
+                      dangerouslySetInnerHTML={{ __html: active.content }}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          ) : null}
+        </AnimatePresence>
+        
+        <motion.ul 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="max-w-3xl mx-auto w-full gap-4 grid grid-cols-1"
+        >
+          {currentEvents.map((event, index) => (
+            <motion.div
+              layoutId={`card-${event.title}`}
+              key={`card-${event.title}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: 1, 
+                y: 0,
+                transition: { delay: 0.4 + (index * 0.1) }
+              }}
+              exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
+              onClick={() => setActive(event)}
+              className="p-4 flex flex-col md:flex-row justify-between items-center bg-gray-900/40 hover:bg-gray-800/60 backdrop-blur-md border border-gray-800/40 hover:border-teal-500/30 rounded-xl cursor-pointer transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+              style={{
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)"
+              }}
+            >
+              <div className="flex gap-3 md:gap-5 flex-col md:flex-row w-full md:w-auto">
+                <motion.div layoutId={`image-${event.title}`} className="relative mx-auto md:mx-0">
+                  <div className="h-32 w-32 md:h-16 md:w-16 rounded-lg relative overflow-hidden">
+                    <Image
+                      fill
+                      src={event.src}
+                      alt={event.title}
+                      className="object-cover object-center transition-transform group-hover:scale-110"
+                    />
+                  </div>
+                </motion.div>
+                <div className="text-center md:text-left flex-1">
+                  <motion.span
+                    layoutId={`tag-${event.title}`}
+                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full mb-2 shadow-md ${getTagColorClass(event.tag)}`}
+                  >
+                    {event.tag.charAt(0).toUpperCase() + event.tag.slice(1)}
+                  </motion.span>
+                  <motion.h3
+                    layoutId={`title-${event.title}`}
+                    className="font-medium text-white text-lg mb-1"
+                  >
+                    {event.title}
+                  </motion.h3>
+                  <motion.p
+                    layoutId={`description-${event.description}`}
+                    className="text-gray-400 text-sm line-clamp-3 mx-auto md:mx-0 max-w-full"
+                  >
+                    {event.description}
+                  </motion.p>
+                </div>
+              </div>
+              <motion.button
+                layoutId={`button-${event.title}`}
+                className="shrink-0 px-5 py-2 text-sm rounded-full font-bold bg-gray-800/80 backdrop-blur-sm hover:bg-gradient-to-r hover:from-teal-500 hover:to-blue-500 text-gray-300 hover:text-white mt-4 md:mt-0 transition-all border border-gray-700/30 hover:border-transparent shadow-md hover:shadow-lg shadow-black/10 hover:shadow-teal-500/20"
+              >
+                Manage
+              </motion.button>
+            </motion.div>
+          ))}
+        </motion.ul>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="flex justify-center items-center gap-2 mt-10"
+          >
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-full ${
+                currentPage === 1
+                  ? "bg-gray-900/30 text-gray-600 cursor-not-allowed"
+                  : "bg-gray-800/70 text-gray-300 hover:bg-gray-700 border border-gray-800/50 hover:border-teal-500/30 transition-all"
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-9 h-9 rounded-full transition-all ${
+                    currentPage === page
+                      ? "bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-lg shadow-teal-500/20"
+                      : "bg-gray-900/50 text-gray-300 hover:bg-gray-800 border border-gray-800/50 hover:border-teal-500/30"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-full ${
+                currentPage === totalPages
+                  ? "bg-gray-900/30 text-gray-600 cursor-not-allowed"
+                  : "bg-gray-800/70 text-gray-300 hover:bg-gray-700 border border-gray-800/50 hover:border-teal-500/30 transition-all"
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          </motion.div>
+        )}
       </div>
 
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-gray-900 rounded-lg p-6 max-w-md w-full border border-purple-500/30"
-          >
-            <h3 className="text-xl font-bold mb-4 text-white">Enter Event Password</h3>
-            <form onSubmit={handlePasswordSubmit}>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 text-white rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Enter password"
-                autoFocus
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowPasswordModal(false);
-                    setPassword('');
-                    setSelectedEvent(null);
-                  }}
-                  className="px-4 py-2 border border-gray-700 text-gray-300 rounded-md hover:bg-gray-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-purple-700 text-white rounded-md hover:bg-purple-600 transition-colors disabled:bg-purple-900 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit'}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showPasswordModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center p-4 z-[200]">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0, transition: { duration: 0.3 } }}
+              transition={{ duration: 0.3 }}
+              className="bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 md:p-8 max-w-md w-full border border-gray-800/50 shadow-2xl"
+              style={{
+                boxShadow: "0 0 40px rgba(0, 0, 0, 0.5), 0 0 100px rgba(0, 0, 0, 0.3)"
+              }}
+            >
+              <h3 className="text-2xl font-bold mb-6 text-white">Enter Event Password</h3>
+              <form onSubmit={handlePasswordSubmit}>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-800/80 border border-gray-700/50 focus:border-teal-500/50 text-white rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-transparent shadow-inner placeholder-gray-500"
+                  placeholder="Enter password"
+                  autoFocus
+                />
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPasswordModal(false);
+                      setPassword('');
+                      setSelectedEvent(null);
+                    }}
+                    className="px-5 py-3 border border-gray-700/50 text-gray-300 rounded-lg hover:bg-gray-800 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-5 py-3 bg-gradient-to-r from-teal-500 to-blue-500 text-white rounded-lg hover:from-teal-400 hover:to-blue-400 transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 disabled:from-gray-700 disabled:to-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom scrollbar styles - improved for touch devices */}
+      <style jsx global>{`
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(59, 130, 246, 0.5) rgba(31, 41, 55, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(31, 41, 55, 0.2);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(59, 130, 246, 0.5);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(59, 130, 246, 0.7);
+        }
+        
+        /* Improved mobile text rendering */
+        @media (max-width: 768px) {
+          .prose {
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+          }
+          .prose p {
+            margin-bottom: 1em !important;
+          }
+          .prose h1, .prose h2, .prose h3, .prose h4 {
+            margin-top: 1.5em !important;
+            margin-bottom: 0.75em !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
+
+const CloseIcon = () => {
+  return (
+    <motion.svg
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, rotate: 0 }}
+      exit={{
+        opacity: 0,
+        transition: { duration: 0.2 },
+      }}
+      whileHover={{ rotate: 90 }}
+      transition={{ duration: 0.2 }}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-6 w-6 text-gray-300"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M18 6l-12 12" />
+      <path d="M6 6l12 12" />
+    </motion.svg>
+  );
+};
+
+// Navigation tags - updated to only include technical, cultural, business
+const tags: Tag[] = [
+  { id: "all", name: "All Events" },
+  { id: "technical", name: "Technical" },
+  { id: "cultural", name: "Cultural" },
+  { id: "business", name: "Business" }
+];
