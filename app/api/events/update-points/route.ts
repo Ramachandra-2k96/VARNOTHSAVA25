@@ -5,10 +5,11 @@ import { ObjectId } from 'mongodb';
 // Define a type for the valid point types
 type PointType = 'firstPlace' | 'secondPlace' | 'thirdPlace' | 'fourthPlace' | 'completedInTime' | 'participationPoint';
 
+// Updated point values according to requirements
 const POINT_VALUES: Record<PointType, number> = {
-  firstPlace: 5,
-  secondPlace: 4,
-  thirdPlace: 3,
+  firstPlace: 10,
+  secondPlace: 7,
+  thirdPlace: 5,
   fourthPlace: 2,
   completedInTime: 1,
   participationPoint: 1

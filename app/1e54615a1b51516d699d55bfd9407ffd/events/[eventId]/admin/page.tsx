@@ -36,6 +36,10 @@ export default function EventAdminPage({
   const [eventDetails, setEventDetails] = useState<any>(null);
   const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
   const [scanTimestamp, setScanTimestamp] = useState<number>(0);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [filter, setFilter] = useState<string>('all'); // 'all', 'passed', 'notPassed'
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [editMode, setEditMode] = useState(false);
   
   const resolvedParams = use(params);
   const eventId = resolvedParams.eventId;
@@ -170,6 +174,89 @@ export default function EventAdminPage({
     );
   };
 
+  // New function to select all users for completion
+  const handleSelectAllCompleted = (checked: boolean) => {
+    setRegisteredUsers(prevUsers => 
+      prevUsers.map(user => ({
+        ...user,
+        eventPoints: { ...user.eventPoints, completedInTime: checked }
+      }))
+    );
+  };
+
+  // New function to update points for all users
+  const handleUpdatePoints = async () => {
+    setIsUpdating(true);
+    
+    try {
+      // Create an array of update operations
+      const updateOperations = registeredUsers.flatMap(user => {
+        const operations = [];
+        
+        // For each point type, create an update operation if needed
+        const pointTypes: (keyof RegisteredUser['eventPoints'])[] = [
+          'firstPlace', 'secondPlace', 'thirdPlace', 'fourthPlace', 'completedInTime', 'participationPoint'
+        ];
+        
+        for (const pointType of pointTypes) {
+          operations.push({
+            userId: user._id,
+            eventId,
+            pointType,
+            value: user.eventPoints[pointType] || false
+          });
+        }
+        
+        return operations;
+      });
+      
+      // Execute all update operations in sequence
+      for (const operation of updateOperations) {
+        await fetch('/api/events/update-points', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(operation),
+        });
+      }
+      
+      toast.success('Points updated successfully');
+    } catch (error) {
+      console.error('Error updating points:', error);
+      toast.error('Failed to update points');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Filter users based on the selected filter
+  const filteredUsers = registeredUsers.filter(user => {
+    // Apply search filter
+    const searchMatch = 
+      searchTerm === '' || 
+      user.firstname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.college.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Apply round filter
+    if (filter === 'all') return searchMatch;
+    if (filter === 'passed') return user.eventPoints.completedInTime && searchMatch;
+    if (filter === 'notPassed') return !user.eventPoints.completedInTime && searchMatch;
+    
+    return searchMatch;
+  });
+
+  // Point values for display
+  const pointValues = {
+    firstPlace: 10,
+    secondPlace: 7,
+    thirdPlace: 5,
+    fourthPlace: 2,
+    completedInTime: 1,
+    participationPoint: 1
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 p-4">
       <div className="max-w-6xl mx-auto">
@@ -189,7 +276,7 @@ export default function EventAdminPage({
           </div>
 
           <div className="p-4 text-white">
-            <div className="mb-4">
+            <div className="mb-4 flex flex-wrap gap-2 items-center">
               <button
                 onClick={() => setShowScanner(true)}
                 className="px-4 py-2 bg-purple-700 text-white rounded-md hover:bg-purple-600 transition-colors"
@@ -197,6 +284,41 @@ export default function EventAdminPage({
               >
                 {loading ? "Processing..." : "Scan QR Code"}
               </button>
+              
+              <button
+                onClick={handleUpdatePoints}
+                className="px-4 py-2 bg-green-700 text-white rounded-md hover:bg-green-600 transition-colors"
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Updating..." : "Update Points"}
+              </button>
+              
+              <button
+                onClick={() => setEditMode(!editMode)}
+                className={`px-4 py-2 ${editMode ? 'bg-yellow-700' : 'bg-blue-700'} text-white rounded-md hover:${editMode ? 'bg-yellow-600' : 'bg-blue-600'} transition-colors`}
+              >
+                {editMode ? "Done Editing" : "Edit Points"}
+              </button>
+              
+              <div className="ml-auto flex gap-2 items-center">
+                <select 
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  className="bg-gray-800 border border-gray-700 rounded-md px-3 py-1 text-sm"
+                >
+                  <option value="all">All Users</option>
+                  <option value="passed">Passed Round</option>
+                  <option value="notPassed">Not Passed</option>
+                </select>
+                
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-gray-800 border border-gray-700 rounded-md px-3 py-1 text-sm"
+                />
+              </div>
             </div>
 
             {showScanner && (
@@ -216,6 +338,7 @@ export default function EventAdminPage({
                 </button>
               </div>
             )}
+            
             {registeredUsers.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
                 No users registered for this event yet. Scan QR codes to register users.
@@ -227,11 +350,25 @@ export default function EventAdminPage({
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Name</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">College</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Awards</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">
+                        <div className="flex items-center justify-between">
+                          <span>Awards</span>
+                          {editMode && (
+                            <label className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                onChange={(e) => handleSelectAllCompleted(e.target.checked)}
+                                className="rounded text-purple-600 bg-gray-700 border-gray-600"
+                              />
+                              <span className="text-sm text-gray-300">Select All Completed</span>
+                            </label>
+                          )}
+                        </div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-gray-900 divide-y divide-gray-800">
-                    {registeredUsers.map((user) => (
+                    {filteredUsers.map((user) => (
                       <tr key={user._id} className="hover:bg-gray-800/50 transition-colors">
                         <td className="px-4 py-4 whitespace-nowrap">
                           {user.firstname} {user.lastname}
@@ -240,53 +377,63 @@ export default function EventAdminPage({
                           {user.college}
                         </td>
                         <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            <label className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                checked={user.eventPoints?.firstPlace || false}
-                                onChange={() => handleCheckboxChange(user._id, 'firstPlace')}
-                                className="rounded text-purple-600 bg-gray-700 border-gray-600"
-                              />
-                              <span className="text-sm text-gray-300">1st</span>
-                            </label>
-                            <label className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                checked={user.eventPoints?.secondPlace || false}
-                                onChange={() => handleCheckboxChange(user._id, 'secondPlace')}
-                                className="rounded text-purple-600 bg-gray-700 border-gray-600"
-                              />
-                              <span className="text-sm text-gray-300">2nd</span>
-                            </label>
-                            <label className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                checked={user.eventPoints?.thirdPlace || false}
-                                onChange={() => handleCheckboxChange(user._id, 'thirdPlace')}
-                                className="rounded text-purple-600 bg-gray-700 border-gray-600"
-                              />
-                              <span className="text-sm text-gray-300">3rd</span>
-                            </label>
-                            <label className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                checked={user.eventPoints?.fourthPlace || false}
-                                onChange={() => handleCheckboxChange(user._id, 'fourthPlace')}
-                                className="rounded text-purple-600 bg-gray-700 border-gray-600"
-                              />
-                              <span className="text-sm text-gray-300">4th</span>
-                            </label>
-                            <label className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                checked={user.eventPoints?.completedInTime || false}
-                                onChange={() => handleCheckboxChange(user._id, 'completedInTime')}
-                                className="rounded text-purple-600 bg-gray-700 border-gray-600"
-                              />
-                              <span className="text-sm text-gray-300">Completed</span>
-                            </label>
-                          </div>
+                          {editMode ? (
+                            <div className="flex flex-wrap gap-2">
+                              <label className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={user.eventPoints?.firstPlace || false}
+                                  onChange={() => handleCheckboxChange(user._id, 'firstPlace')}
+                                  className="rounded text-purple-600 bg-gray-700 border-gray-600"
+                                />
+                                <span className="text-sm text-gray-300">1st (+{pointValues.firstPlace})</span>
+                              </label>
+                              <label className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={user.eventPoints?.secondPlace || false}
+                                  onChange={() => handleCheckboxChange(user._id, 'secondPlace')}
+                                  className="rounded text-purple-600 bg-gray-700 border-gray-600"
+                                />
+                                <span className="text-sm text-gray-300">2nd (+{pointValues.secondPlace})</span>
+                              </label>
+                              <label className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={user.eventPoints?.thirdPlace || false}
+                                  onChange={() => handleCheckboxChange(user._id, 'thirdPlace')}
+                                  className="rounded text-purple-600 bg-gray-700 border-gray-600"
+                                />
+                                <span className="text-sm text-gray-300">3rd (+{pointValues.thirdPlace})</span>
+                              </label>
+                              <label className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={user.eventPoints?.fourthPlace || false}
+                                  onChange={() => handleCheckboxChange(user._id, 'fourthPlace')}
+                                  className="rounded text-purple-600 bg-gray-700 border-gray-600"
+                                />
+                                <span className="text-sm text-gray-300">4th (+{pointValues.fourthPlace})</span>
+                              </label>
+                              <label className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={user.eventPoints?.completedInTime || false}
+                                  onChange={() => handleCheckboxChange(user._id, 'completedInTime')}
+                                  className="rounded text-purple-600 bg-gray-700 border-gray-600"
+                                />
+                                <span className="text-sm text-gray-300">Completed (+{pointValues.completedInTime})</span>
+                              </label>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {user.eventPoints?.firstPlace && <span className="px-2 py-1 bg-purple-900/50 rounded-full text-xs">1st Place</span>}
+                              {user.eventPoints?.secondPlace && <span className="px-2 py-1 bg-blue-900/50 rounded-full text-xs">2nd Place</span>}
+                              {user.eventPoints?.thirdPlace && <span className="px-2 py-1 bg-green-900/50 rounded-full text-xs">3rd Place</span>}
+                              {user.eventPoints?.fourthPlace && <span className="px-2 py-1 bg-yellow-900/50 rounded-full text-xs">4th Place</span>}
+                              {user.eventPoints?.completedInTime && <span className="px-2 py-1 bg-gray-700/50 rounded-full text-xs">Completed</span>}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
