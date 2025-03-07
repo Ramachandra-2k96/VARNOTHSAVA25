@@ -5,12 +5,16 @@ import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { IconBrandGoogle, IconHome } from "@tabler/icons-react";
-import { useState } from "react";
+import { IconHome } from "@tabler/icons-react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { 
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  getAuth
+} from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -20,11 +24,104 @@ export default function LoginForm() {
     password: "",
   });
 
+  // Check for existing session on component mount
+  useEffect(() => {
+    const checkExistingSession = () => {
+      // Check for auth-token cookie
+      const cookies = document.cookie.split(';');
+      const authTokenCookie = cookies.find(cookie => cookie.trim().startsWith('auth-token='));
+      
+      if (authTokenCookie) {
+        // Verify the token on the server side
+        fetch("/api/auth/verify-session", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        .then(response => {
+          if (response.ok) {
+            // If token is valid, redirect to dashboard
+            router.push("/dashboard");
+          }
+        })
+        .catch(error => {
+          console.error("Error verifying session:", error);
+        });
+      }
+    };
+    
+    // Also listen for Firebase auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, set cookies and redirect
+        handleUserSession(user);
+      }
+    });
+    
+    checkExistingSession();
+    
+    return () => unsubscribe();
+  }, [router]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
     });
+  };
+
+  // Consolidated function to handle user session setup
+  const handleUserSession = async (user: any) => {
+    try {
+      const token = await user.getIdToken();
+
+      // Set the auth-token cookie
+      document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Strict`;
+
+      // Set the user_info cookie with proper encoding
+      const userInfo = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || (user.email ? `${user.email.split("@")[0]}` : "User")
+      };
+      document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=3600; SameSite=Strict`;
+
+      // Send token to session endpoint
+      const sessionResponse = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      if (!sessionResponse.ok) {
+        throw new Error("Failed to create session");
+      }
+
+      const { uid } = await sessionResponse.json();
+
+      // Update user data in MongoDB
+      await fetch(`/api/users/${uid}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          displayName: user.displayName || (user.email ? `${user.email.split("@")[0]}` : "User"),
+          photoURL: user.photoURL,
+          lastLogin: new Date().toISOString(),
+        }),
+      });
+
+      toast.success("Successfully logged in!");
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error("Session handling error:", error);
+      toast.error("Error setting up session. Please try again.");
+    }
   };
 
   const handleEmailLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,71 +136,24 @@ export default function LoginForm() {
         return;
       }
 
+      // Proceed with password login
       const userCredential = await signInWithEmailAndPassword(
         auth,
         formData.email,
         formData.password
       );
-      const user = userCredential.user;
-      const token = await user.getIdToken();
-
-      // Set the auth-token cookie
-      document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Strict`;
-
-      // Set the user_info cookie with proper encoding
-      const userInfo = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName || `${formData.email.split("@")[0]}`
-      };
-      document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=3600; SameSite=Strict`;
-
-      // Send token to session endpoint
-      const sessionResponse = await fetch("/api/auth/session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      if (!sessionResponse.ok) {
-        throw new Error("Failed to create session");
-      }
-
-      const { uid } = await sessionResponse.json();
-
-      // Update user data in MongoDB
-      const userResponse = await fetch(`/api/users/${uid}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: user.email,
-          displayName: user.displayName || `${formData.email.split("@")[0]}`,
-          photoURL: user.photoURL,
-          lastLogin: new Date().toISOString(),
-        }),
-      });
-
-      if (!userResponse.ok) {
-        console.error("Failed to update user data in MongoDB");
-      }
-
-      toast.success("Successfully logged in!");
-      router.push("/dashboard");
+      
+      await handleUserSession(userCredential.user);
     } catch (error: any) {
       switch (error.code) {
         case "auth/user-not-found":
-          toast.error("No account found with this email.");
-          setTimeout(() => router.push("/signup"), 2000);
+          toast.error("Invalid email or password");
           break;
         case "auth/wrong-password":
-          toast.error("Invalid password.");
+          toast.error("Invalid email or password");
           break;
         case "auth/invalid-email":
-          toast.error("Invalid email address.");
+          toast.error("Invalid email address");
           break;
         case "auth/too-many-requests":
           toast.error("Too many attempts. Please try again later.");
@@ -111,75 +161,6 @@ export default function LoginForm() {
         default:
           toast.error(error.message || "An error occurred. Please try again.");
           console.error("Login error:", error);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    const provider = new GoogleAuthProvider();
-
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const token = await user.getIdToken();
-
-      // Set the auth-token cookie
-      document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Strict`;
-
-      // Set the user_info cookie with proper encoding
-      const userInfo = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName || `${formData.email.split("@")[0]}`
-      };
-      document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=3600; SameSite=Strict`;
-
-      // Send token to session endpoint
-      const sessionResponse = await fetch("/api/auth/session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      if (!sessionResponse.ok) {
-        throw new Error("Failed to create session");
-      }
-
-      const { uid } = await sessionResponse.json();
-
-      // Update user data in MongoDB
-      const userResponse = await fetch(`/api/users/${uid}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          lastLogin: new Date().toISOString(),
-        }),
-      });
-
-      if (!userResponse.ok) {
-        console.error("Failed to update user data in MongoDB");
-      }
-
-      toast.success("Successfully logged in with Google!");
-      router.push("/dashboard");
-    } catch (error: any) {
-      if (error.code === "auth/popup-closed-by-user") {
-        toast.error("Login cancelled.");
-      } else if (error.code === "auth/popup-blocked") {
-        toast.error("Popup blocked. Please allow popups and try again.");
-      } else {
-        toast.error(error.message || "Failed to login with Google.");
-        console.error("Google login error:", error);
       }
     } finally {
       setIsLoading(false);
@@ -255,24 +236,6 @@ export default function LoginForm() {
             <BottomGradient />
           </button>
 
-          <div className="relative flex items-center justify-center">
-            <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent" />
-            <span className="relative bg-black px-4 text-sm text-gray-500">
-              or continue with
-            </span>
-          </div>
-
-          <button
-            className="group/btn relative flex h-11 w-full items-center justify-center space-x-2 rounded-lg border border-gray-800 bg-black font-medium text-white shadow-lg transition-all duration-300 hover:scale-[1.01] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-black active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={isLoading}
-          >
-            <IconBrandGoogle className="h-5 w-5" />
-            <span>{isLoading ? "Processing..." : "Sign in with Google"}</span>
-            <BottomGradient />
-          </button>
-
           <p className="text-center text-sm text-gray-400">
             Don&apos;t have an account?{" "}
             <Link
@@ -290,10 +253,7 @@ export default function LoginForm() {
 
 const BottomGradient = () => {
   return (
-    <>
-      <span className="absolute inset-x-0 -bottom-px h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition-all duration-500 group-hover/btn:opacity-100" />
-      <span className="absolute inset-x-10 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 blur-sm transition-all duration-500 group-hover/btn:opacity-100" />
-    </>
+    <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent opacity-30" />
   );
 };
 
@@ -304,5 +264,5 @@ const LabelInputContainer = ({
   children: React.ReactNode;
   className?: string;
 }) => {
-  return <div className={cn("flex flex-col space-y-2", className)}>{children}</div>;
+  return <div className={cn("space-y-2", className)}>{children}</div>;
 };

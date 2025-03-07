@@ -72,6 +72,38 @@ export default function SignupFormDemo() {
         formData.password
       )
 
+      // Get the user object
+      const user = userCredential.user
+      
+      // Get the ID token
+      const token = await user.getIdToken()
+      
+      // Set the auth-token cookie
+      document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Strict`
+      
+      // Set the user_info cookie with proper encoding
+      const userInfo = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.email ? `${user.email.split("@")[0]}` : "User"
+      }
+      document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=3600; SameSite=Strict`
+      
+      // Send token to session endpoint
+      const sessionResponse = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      })
+      
+      if (!sessionResponse.ok) {
+        throw new Error("Failed to create session")
+      }
+      
+      const { uid } = await sessionResponse.json()
+
       // Save user details to MongoDB through API route
       const response = await fetch('/api/users', {
         method: 'POST',
@@ -83,7 +115,7 @@ export default function SignupFormDemo() {
           lastname: formData.lastname,
           email: formData.email,
           college: formData.college,
-          firebaseUid: userCredential.user.uid,
+          firebaseUid: user.uid,
           createdAt: new Date().toISOString()
         }),
       })
@@ -93,7 +125,7 @@ export default function SignupFormDemo() {
       }
 
       toast.success("Account created successfully!")
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     } catch (error: any) {
       // Enhanced Firebase error handling
       const errorCode = error?.code

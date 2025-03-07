@@ -31,7 +31,8 @@ export const HeroParallax = ({
     offset: ["start start", "end start"],
   })
 
-  const springConfig = { stiffness: 100, damping: 30 }
+  // Faster and smoother spring config
+  const springConfig = { stiffness: 150, damping: 15, mass: 0.5 }
 
   const translateX = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1000]), springConfig)
   const translateXReverse = useSpring(useTransform(scrollYProgress, [0, 1], [0, -1000]), springConfig)
@@ -175,7 +176,7 @@ export const ProductCard = React.memo(({ product, translate }: ProductProps) => 
       style={{ x: translate, willChange: "transform" }} 
       whileHover={{
         y: -20,
-        transition: { duration: 0.3 },
+        transition: { duration: 0.2, type: "spring", stiffness: 300 },
       }}
       className="group/product h-96 w-[30rem] relative flex-shrink-0 rounded-xl overflow-hidden"
     >
@@ -183,11 +184,11 @@ export const ProductCard = React.memo(({ product, translate }: ProductProps) => 
         src={product.thumbnail || "/placeholder.svg"}
         height="600"
         width="600"
-        className="object-cover object-left-top absolute h-full w-full inset-0 transition-transform duration-500 group-hover/product:scale-110"
+        className="object-cover object-left-top absolute h-full w-full inset-0 transition-transform duration-300 group-hover/product:scale-110"
         alt={product.title}
       />
-      <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-90 bg-gradient-to-t from-black via-black/50 to-transparent transition-opacity duration-300"></div>
-      <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-full group-hover/product:translate-y-0 transition-transform duration-300">
+      <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-90 bg-gradient-to-t from-black via-black/50 to-transparent transition-opacity duration-200"></div>
+      <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-full group-hover/product:translate-y-0 transition-transform duration-200">
         <h2 className="text-xl font-bold text-white mb-2">{product.title}</h2>
         <div className="h-1 w-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
       </div>

@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRCode from 'react-qr-code';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, School, Star, Trophy, ChevronRight } from 'lucide-react';
+import { User, School, Star, Trophy, ChevronRight, LogOut } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { getAuth } from 'firebase/auth';
+import { auth } from '@/lib/firebase'; // Adjust the import path as necessary
 
 interface User {
   _id: string;
@@ -66,70 +69,56 @@ export default function ProfileSection() {
         // First, try to get user ID from cookie
         const userId = getUserIdFromCookie();
         
-        if (userId) {
-          console.log('Found user ID in cookie:', userId);
-          // If user ID is in cookie, fetch user details directly
-          try {
-            const userResponse = await fetch(`/api/users/${userId}`);
-            
-            if (userResponse.ok) {
-              const userData: User = await userResponse.json();
-              setUser(userData);
-              
-              // Trigger points animation when data loads
-              setTimeout(() => {
-                setAnimatePoints(true);
-              }, 500);
-            } else {
-              console.error('Failed to fetch user data from MongoDB');
-              // Don't redirect yet, try server verification as fallback
-            }
-          } catch (error) {
-            console.error('Error fetching user data:', error);
-            // Don't redirect yet, try server verification as fallback
+        if (!userId) {
+          // If no user ID in cookie, try to verify session with API
+          const response = await fetch('/api/auth/verify-session');
+          
+          if (!response.ok) {
+            console.error('Session verification failed');
+            router.push('/login');
+            return;
           }
-        }
-        
-        // If no userId from cookie or fetching user data failed, try server verification
-        if (!userId || !user) {
-          console.log('Attempting server verification...');
-          try {
-            const response = await fetch('/api/auth/verify-session');
+          
+          // If session verification succeeded but no user ID in cookie,
+          // get user ID from response
+          const data = await response.json();
+          const uid = data.user?.uid;
+          
+          if (!uid) {
+            console.error('No user ID in session response');
+            router.push('/login');
+            return;
+          }
+          
+          // Fetch user details with the UID from session verification
+          const userResponse = await fetch(`/api/users/${uid}`);
+          
+          if (userResponse.ok) {
+            const userData: User = await userResponse.json();
+            setUser(userData);
             
-            if (!response.ok) {
-              const errorData = await response.json();
-              console.error('Session verification failed:', errorData);
-              router.push('/login');
-              return;
-            }
+            // Trigger points animation when data loads
+            setTimeout(() => {
+              setAnimatePoints(true);
+            }, 500);
+          } else {
+            console.error('Failed to fetch user data');
+            router.push('/login');
+          }
+        } else {
+          // If user ID is in cookie, fetch user details directly
+          const userResponse = await fetch(`/api/users/${userId}`);
+          
+          if (userResponse.ok) {
+            const userData: User = await userResponse.json();
+            setUser(userData);
             
-            const data = await response.json();
-            console.log('Server verification response:', data);
-            
-            if (!data.user || !data.user.uid) {
-              console.error('No user ID in session response');
-              router.push('/login');
-              return;
-            }
-            
-            // Fetch user details with the UID from session verification
-            const uid = data.user.uid;
-            const userResponse = await fetch(`/api/users/${uid}`);
-            
-            if (userResponse.ok) {
-              const userData: User = await userResponse.json();
-              setUser(userData);
-              
-              // Trigger points animation when data loads
-              setTimeout(() => {
-                setAnimatePoints(true);
-              }, 500);
-            } else {
-              console.error('Failed to fetch user data after server verification');
-              router.push('/login');
-            }
-          } catch (error) {
-            console.error('Error during server verification:', error);
+            // Trigger points animation when data loads
+            setTimeout(() => {
+              setAnimatePoints(true);
+            }, 500);
+          } else {
+            console.error('Failed to fetch user data');
             router.push('/login');
           }
         }
@@ -150,6 +139,29 @@ export default function ProfileSection() {
   
   const navigateToLeaderboard = () => {
     router.push('/leaderboard');
+  };
+
+  // Add this function to handle logout
+  const handleLogout = async () => {
+    // Clear all authentication cookies
+    document.cookie = 'auth-token=; path=/; max-age=0; SameSite=Strict';
+    document.cookie = 'user_info=; path=/; max-age=0; SameSite=Strict';
+    document.cookie = 'session=; path=/; max-age=0; SameSite=Strict';
+    
+    // Clear any localStorage items if needed
+    localStorage.removeItem(`qr_code_${user?._id}`);
+    
+    // Logout from Firebase
+    const firebaseAuth = getAuth();
+    await firebaseAuth.signOut().then(() => {
+      // Show success message
+      toast.success("Successfully logged out!");
+      // Redirect to login page
+      router.push('/login');
+    }).catch((error) => {
+      console.error('Error logging out from Firebase:', error);
+      toast.error("Logout failed. Please try again.");
+    });
   };
   
   if (loading) {
@@ -282,6 +294,20 @@ export default function ProfileSection() {
               <div className="flex items-center">
                 <Trophy size={16} className="mr-2" />
                 Leaderboard
+              </div>
+              <ChevronRight size={16} />
+            </motion.button>
+            
+            {/* Add Logout Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleLogout}
+              className="mt-3 w-full bg-gray-100 text-gray-700 border border-gray-200 py-2 px-4 rounded-lg font-medium flex items-center justify-between shadow-sm hover:bg-gray-200 transition-colors"
+            >
+              <div className="flex items-center">
+                <LogOut size={16} className="mr-2" />
+                Logout
               </div>
               <ChevronRight size={16} />
             </motion.button>

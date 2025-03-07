@@ -1,276 +1,335 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import { useEffect, useRef, useState } from "react"
+import { motion, useScroll, useTransform, useAnimation, useInView } from "framer-motion"
+import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { SplitText } from "gsap/SplitText"
 
-const IntroAnimation = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [animationComplete, setAnimationComplete] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  
+// Register GSAP plugins
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger, SplitText)
+}
+
+export default function WebsiteReveal() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const marqueeRef = useRef<HTMLDivElement>(null)
+  const imageRef = useRef<HTMLDivElement>(null)
+  const featuresRef = useRef<HTMLDivElement>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  // Framer Motion animations
+  const controls = useAnimation()
+  const isInView = useInView(featuresRef, { once: true, amount: 0.3 })
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  })
+
+  const imageScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.2])
+  const imageOpacity = useTransform(scrollYProgress, [0, 0.2, 0.3], [0, 1, 1])
+  const textY = useTransform(scrollYProgress, [0, 0.3, 0.6], [60, 0, -60])
+
+  // GSAP animations
   useEffect(() => {
-    const timeline = [
-      { step: 1, delay: 200 },    // First layer reveal
-      { step: 2, delay: 200 },    // Second layer reveal
-      { step: 3, delay: 200 },    // Third layer reveal
-      { step: 4, delay: 1000 },   // Logo appearance
-      { step: 5, delay: 1200 },   // Text animation
-      { step: 6, delay: 1500 },   // Final transition
-      { step: 7, delay: 800 }     // Complete
-    ];
-    
-    let timeoutId: NodeJS.Timeout;
-    
-    const runTimeline = (index = 0) => {
-      if (index < timeline.length) {
-        timeoutId = setTimeout(() => {
-          setCurrentStep(timeline[index].step);
-          runTimeline(index + 1);
-        }, timeline[index].delay);
-      } else {
-        setTimeout(() => setAnimationComplete(true), 1000);
-      }
-    };
-    
-    if (containerRef.current) {
-      createParticles();
+    if (!isLoaded) return
+
+    // Heading animation with SplitText
+    if (headingRef.current) {
+      const splitText = new SplitText(headingRef.current, { type: "chars, words" })
+
+      gsap.from(splitText.chars, {
+        opacity: 0,
+        y: 100,
+        rotateX: -90,
+        stagger: 0.02,
+        duration: 1,
+        ease: "back.out(1.7)",
+      })
     }
-    
-    runTimeline();
-    
-    return () => clearTimeout(timeoutId);
-  }, []);
-  
-  const createParticles = () => {
-    if (!containerRef.current) return;
-    
-    for (let i = 0; i < 100; i++) {
-      const particle = document.createElement("div");
-      
-      // Random properties
-      const size = Math.random() * 6 + 1;
-      const posX = Math.random() * 100;
-      const posY = Math.random() * 100;
-      const delay = Math.random() * 2;
-      const duration = Math.random() * 10 + 10;
-      const blur = Math.random() * 5;
-      
-      // Apply styles
-      particle.className = "absolute rounded-full bg-white/30";
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      particle.style.left = `${posX}%`;
-      particle.style.top = `${posY}%`;
-      particle.style.filter = `blur(${blur}px)`;
-      particle.style.animation = `floatParticle ${duration}s linear ${delay}s infinite`;
-      
-      containerRef.current.appendChild(particle);
+
+    // Marquee animation
+    if (marqueeRef.current) {
+      const marqueeItems = marqueeRef.current.querySelectorAll(".marquee-item")
+
+      gsap.to(marqueeItems, {
+        xPercent: -100,
+        ease: "none",
+        duration: 20,
+        repeat: -1,
+        repeatDelay: 0,
+        scrollTrigger: {
+          trigger: marqueeRef.current,
+          start: "top bottom",
+          end: "bottom top",
+          toggleActions: "play pause resume pause",
+        },
+      })
     }
-  };
+
+    // Image reveal animation
+    if (imageRef.current) {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: imageRef.current,
+          start: "top 80%",
+          end: "bottom 20%",
+          toggleActions: "play none none reverse",
+        },
+      })
+
+      tl.from(imageRef.current, {
+        clipPath: "inset(100% 0% 0% 0%)",
+        duration: 1.5,
+        ease: "power4.inOut",
+      })
+    }
+  }, [isLoaded])
+
+  // Trigger Framer Motion animations when features section is in view
+  useEffect(() => {
+    if (isInView) {
+      controls.start("visible")
+    }
+  }, [controls, isInView])
+
+  // Set loaded state after component mounts
+  useEffect(() => {
+    setIsLoaded(true)
+  }, [])
+
+  // Feature items with staggered animation
+  const featureItems = [
+    "Responsive Design",
+    "Modern Animations",
+    "Performance Optimized",
+    "Dark Theme",
+    "Interactive Elements",
+  ]
+
+  const container = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3,
+      },
+    },
+  }
+
+  const item = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 10,
+      },
+    },
+  }
 
   return (
-    <AnimatePresence>
-      {!animationComplete && (
-        <motion.div 
-          className="fixed inset-0 z-50 overflow-hidden bg-[#0A0A0A]"
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2 }}
-        >
-          {/* Background layers */}
-          <div className="relative w-full h-full">
-            {/* Layer 1 - First reveal */}
-            <motion.div
-              initial={{ scaleX: 1 }}
-              animate={{ scaleX: 0 }}
-              transition={{
-                duration: 1.5,
-                ease: [0.645, 0.045, 0.355, 1],
-                delay: 0.2
-              }}
-              className="absolute inset-0 origin-right bg-[#0F0F0F]"
-            />
+    <div ref={containerRef} className="bg-gray-900 text-white min-h-screen overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+          className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-black/40 z-10"
+        />
 
-            {/* Layer 2 - Second reveal */}
-            <motion.div
-              initial={{ scaleX: 1 }}
-              animate={{ scaleX: 0 }}
-              transition={{
-                duration: 1.5,
-                ease: [0.645, 0.045, 0.355, 1],
-                delay: 0.4
-              }}
-              className="absolute inset-0 origin-right bg-[#141414]"
-            />
+        <motion.div style={{ y: textY }} className="container mx-auto px-6 z-20 text-center">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="text-purple-400 font-mono mb-4"
+          >
+            Discover the future of web animations
+          </motion.p>
 
-            {/* Layer 3 - Final reveal */}
-            <motion.div
-              initial={{ scaleX: 1 }}
-              animate={{ scaleX: 0 }}
-              transition={{
-                duration: 1.5,
-                ease: [0.645, 0.045, 0.355, 1],
-                delay: 0.6
-              }}
-              className="absolute inset-0 origin-right bg-[#1A1A1A]"
-            />
+          <h1 ref={headingRef} className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            Stunning Website Reveal Animations
+          </h1>
 
-            {/* Main content container */}
-            <div className="relative w-full h-full bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A]">
-              {/* Animated grid background */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.1 }}
-                transition={{ duration: 2, delay: 1.5 }}
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: `radial-gradient(circle at 1px 1px, #333 1px, transparent 0)`,
-                  backgroundSize: '50px 50px'
-                }}
-              />
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2, duration: 0.8 }}
+            className="text-gray-300 max-w-2xl mx-auto text-lg mb-8"
+          >
+            Create immersive user experiences with advanced animation techniques using Framer Motion and GSAP
+          </motion.p>
 
-              {/* Particle effect */}
-              <div ref={containerRef} className="absolute inset-0 overflow-hidden opacity-40" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.8 }}
+          >
+            <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105">
+              Explore Now
+            </button>
+          </motion.div>
+        </motion.div>
 
-              {/* Content wrapper */}
-              <div className="relative h-full flex flex-col items-center justify-center">
-                {/* Logo section with enhanced reveal */}
-                <motion.div
-                  initial={{ scale: 1.5, opacity: 0 }}
-                  animate={{ 
-                    scale: 1,
-                    opacity: currentStep >= 4 ? 1 : 0
-                  }}
-                  transition={{ 
-                    duration: 1.8,
-                    ease: [0.19, 1, 0.22, 1]
-                  }}
-                  className="mb-12 relative"
-                >
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 relative">
-                    {/* Logo background glow */}
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0, 0.5, 0] }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        repeatType: "reverse"
-                      }}
-                      className="absolute inset-0 rounded-full bg-blue-500/20 blur-2xl"
-                    />
-                    
-                    {/* Logo container */}
-                    <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#1A1A1A] to-[#2A2A2A] flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-                      <div className="relative w-full h-full flex items-center justify-center p-8">
-                        <Image 
-                          src="https://th.bing.com/th/id/OIP.lZtG95GSzB8X9_q7vUnclAHaHK?rs=1&pid=ImgDetMain"
-                          fill
-                          className="object-contain rounded-full"
-                          alt="Logo"
-                          priority
-                        />
-                      </div>
-                    </div>
+        <motion.div style={{ scale: imageScale, opacity: imageOpacity }} className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent z-10" />
+          <div className="w-full h-full bg-[url('/placeholder.svg?height=1080&width=1920')] bg-cover bg-center" />
+        </motion.div>
+      </section>
 
-                    {/* Animated rings */}
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: [1, 1.5], opacity: [0.3, 0] }}
-                        transition={{
-                          duration: 2,
-                          delay: i * 0.2,
-                          repeat: Infinity,
-                          ease: "linear"
-                        }}
-                        className="absolute inset-0 rounded-full border border-white/10"
-                      />
-                    ))}
-                  </div>
-                </motion.div>
+      {/* Marquee Section */}
+      <section className="py-20 bg-gray-800 overflow-hidden">
+        <div className="mb-12 text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-3xl md:text-4xl font-bold mb-4"
+          >
+            Cutting-Edge Animation Technologies
+          </motion.h2>
+        </div>
 
-                {/* Text reveal section */}
-                <div className="overflow-hidden relative">
-                  <motion.div
-                    initial={{ y: 100 }}
-                    animate={{ 
-                      y: currentStep >= 5 ? 0 : 100
-                    }}
-                    transition={{ 
-                      duration: 1.2,
-                      ease: [0.19, 1, 0.22, 1]
-                    }}
-                    className="text-center"
-                  >
-                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-light tracking-widest">
-                      {["WELCOME", "TO", "VARNOTHSAVA", "2025"].map((word, i) => (
-                        <motion.span
-                          key={word}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: currentStep >= 5 ? 1 : 0 }}
-                          transition={{
-                            duration: 0.8,
-                            delay: 0.1 * i + 0.5
-                          }}
-                          className={`inline-block mx-2 ${
-                            i === 3 ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600" : "text-white/90"
-                          }`}
-                        >
-                          {word}
-                        </motion.span>
-                      ))}
-                    </h2>
-                  </motion.div>
+        <div ref={marqueeRef} className="relative flex overflow-hidden py-10">
+          <div className="flex space-x-8 marquee-item whitespace-nowrap">
+            {Array(2)
+              .fill(0)
+              .map((_, i) => (
+                <div key={i} className="flex space-x-8">
+                  <span className="text-4xl font-bold text-purple-500">GSAP</span>
+                  <span className="text-4xl font-bold text-blue-500">Framer Motion</span>
+                  <span className="text-4xl font-bold text-green-500">ScrollTrigger</span>
+                  <span className="text-4xl font-bold text-yellow-500">Animation</span>
+                  <span className="text-4xl font-bold text-red-500">Transitions</span>
+                  <span className="text-4xl font-bold text-indigo-500">Effects</span>
                 </div>
-
-                {/* Enhanced gradient line */}
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: currentStep >= 5 ? 1 : 0 }}
-                  transition={{ duration: 1.5, delay: 0.8 }}
-                  className="h-[1px] w-[280px] sm:w-[400px] md:w-[600px] bg-gradient-to-r from-transparent via-white/20 to-transparent mt-12"
-                />
-              </div>
-
-              {/* Final transition */}
-              {currentStep >= 6 && (
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{
-                    duration: 1.5,
-                    ease: [0.645, 0.045, 0.355, 1],
-                  }}
-                  className="absolute inset-0 origin-left bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A]"
-                />
-              )}
-            </div>
+              ))}
           </div>
 
-          <style jsx global>{`
-            @keyframes floatParticle {
-              0% {
-                transform: translateY(0) translateX(0);
-                opacity: 0;
-              }
-              20% {
-                opacity: 0.15;
-              }
-              80% {
-                opacity: 0.1;
-              }
-              100% {
-                transform: translateY(-100vh) translateX(20px);
-                opacity: 0;
-              }
-            }
-          `}</style>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
+          <div className="flex space-x-8 marquee-item whitespace-nowrap">
+            {Array(2)
+              .fill(0)
+              .map((_, i) => (
+                <div key={i} className="flex space-x-8">
+                  <span className="text-4xl font-bold text-purple-500">GSAP</span>
+                  <span className="text-4xl font-bold text-blue-500">Framer Motion</span>
+                  <span className="text-4xl font-bold text-green-500">ScrollTrigger</span>
+                  <span className="text-4xl font-bold text-yellow-500">Animation</span>
+                  <span className="text-4xl font-bold text-red-500">Transitions</span>
+                  <span className="text-4xl font-bold text-indigo-500">Effects</span>
+                </div>
+              ))}
+          </div>
+        </div>
+      </section>
 
-export default IntroAnimation;
+      {/* Image Section */}
+      <section className="py-20 bg-gray-900">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="space-y-6"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold">Immersive Visual Experiences</h2>
+              <p className="text-gray-300">
+                Our advanced animation techniques create stunning visual narratives that captivate your audience and
+                elevate your brand presence online.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-center">
+                  <span className="h-2 w-2 bg-purple-500 rounded-full mr-2"></span>
+                  <span>Parallax scrolling effects</span>
+                </li>
+                <li className="flex items-center">
+                  <span className="h-2 w-2 bg-purple-500 rounded-full mr-2"></span>
+                  <span>Smooth page transitions</span>
+                </li>
+                <li className="flex items-center">
+                  <span className="h-2 w-2 bg-purple-500 rounded-full mr-2"></span>
+                  <span>Interactive hover states</span>
+                </li>
+              </ul>
+            </motion.div>
+
+            <div ref={imageRef} className="rounded-lg overflow-hidden shadow-2xl">
+              <img src="/placeholder.svg?height=600&width=800" alt="Animation showcase" className="w-full h-auto" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-gray-800">
+        <div className="container mx-auto px-6">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-3xl md:text-4xl font-bold mb-12 text-center"
+          >
+            Key Features
+          </motion.h2>
+
+          <motion.div
+            ref={featuresRef}
+            variants={container}
+            initial="hidden"
+            animate={controls}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {featureItems.map((feature, index) => (
+              <motion.div
+                key={index}
+                variants={item}
+                className="bg-gray-900 p-8 rounded-lg shadow-lg border border-gray-700 hover:border-purple-500 transition-all duration-300"
+              >
+                <div className="h-12 w-12 bg-purple-900 rounded-lg flex items-center justify-center mb-6">
+                  <span className="text-2xl">{index + 1}</span>
+                </div>
+                <h3 className="text-xl font-bold mb-3">{feature}</h3>
+                <p className="text-gray-400">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="py-20 bg-gradient-to-r from-purple-900 to-indigo-900">
+        <div className="container mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="max-w-3xl mx-auto"
+          >
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to Transform Your Website?</h2>
+            <p className="text-xl text-gray-200 mb-8">
+              Implement these advanced animations and take your user experience to the next level.
+            </p>
+            <button className="bg-white text-purple-900 hover:bg-gray-100 font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105">
+              Get Started Today
+            </button>
+          </motion.div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
