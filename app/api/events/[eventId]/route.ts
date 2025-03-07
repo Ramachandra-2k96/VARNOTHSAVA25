@@ -14,11 +14,11 @@ interface Event {
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ eventId: string }> | { eventId: string } }
+  context: { params: Promise<{ eventId: string }> }
 ) {
   try {
-    // Handle both Promise and non-Promise params
-    const params = 'then' in context.params ? await context.params : context.params;
+    // Await the params Promise
+    const params = await context.params;
     const eventId = params.eventId;
 
     if (!eventId) {
@@ -58,4 +58,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}
