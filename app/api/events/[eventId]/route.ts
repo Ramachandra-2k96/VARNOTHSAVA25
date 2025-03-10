@@ -47,16 +47,19 @@ export async function GET(
 
     if (!event) {
       return NextResponse.json(
-        { error: "Event not found" },
+        { success: false, error: "Event not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(event);
+    return NextResponse.json({
+      success: true,
+      event: event
+    });
   } catch (error: any) {
     console.error("Error fetching event:", error);
     return NextResponse.json(
-      { error: "Failed to fetch event", details: error.message },
+      { success: false, error: "Failed to fetch event", details: error.message },
       { status: 500 }
     );
   }

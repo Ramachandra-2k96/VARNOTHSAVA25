@@ -114,21 +114,44 @@ export default function EventsPage() {
       
       // Get the event to check password
       const response = await fetch(`/api/events/${selectedEvent}`);
+      
+      // Log response status for debugging
+      console.log('API Response Status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch event');
+        throw new Error(`Failed to fetch event: ${response.status}`);
       }
       
       const data = await response.json();
       
-      if (data.success && data.event.password === password) {
-        // Store auth in session and redirect
-        sessionStorage.setItem(`event_auth_${selectedEvent}`, 'true');
-        router.push(`/1e54615a1b51516d699d55bfd9407ffd/events/${selectedEvent}/admin`);
+      // Log the response data structure (without sensitive info)
+      console.log('API Response Structure:', {
+        success: data.success,
+        hasEvent: !!data.event,
+        passwordProvided: !!password
+      });
+      
+      if (data.success && data.event) {
+        if (data.event.password === password) {
+          // Success case
+          toast.success('Authentication successful!');
+          // Store auth in session and redirect
+          sessionStorage.setItem(`event_auth_${selectedEvent}`, 'true');
+          router.push(`/1e54615a1b51516d699d55bfd9407ffd/events/${selectedEvent}/admin`);
+        } else {
+          // Wrong password case
+          console.log('Password mismatch');
+          toast.error('Incorrect password');
+        }
       } else {
-        toast.error('Incorrect password');
+        // No success or no event in response
+        console.error('Invalid API response format:', data);
+        toast.error(data.error || 'Failed to verify event details');
       }
     } catch (error) {
-      toast.error('Failed to authenticate');
+      // Log the actual error
+      console.error('Authentication error:', error);
+      toast.error(`Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSubmitting(false); // Reset submission state
     }
