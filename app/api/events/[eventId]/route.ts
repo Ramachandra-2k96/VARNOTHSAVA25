@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import { NextRequest, NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 // Define the Event interface
 interface Event {
@@ -13,48 +13,49 @@ interface Event {
 }
 
 export async function GET(
-  request: Request,
-  context: { params: Promise<{ eventId: string }> }
+  req: NextRequest,
+  { params }: { params: { eventId: string } }
 ) {
   try {
-    // Await the params Promise
-    const params = await context.params;
     const eventId = params.eventId;
-
+    
     if (!eventId) {
       return NextResponse.json(
-        { success: false, message: 'Event ID is required' },
+        { error: "Event ID is required" },
         { status: 400 }
       );
     }
 
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db("varnothsava");
+
+    // Try to find the event by ID
+    let event;
     
-    // Try to find by string ID first
-    const eventsCollection = db.collection<Event>('events');
-    let event = await eventsCollection.findOne({ _id: eventId } as any);
-    
-    // If not found, try with ObjectId (for backward compatibility)
-    if (!event) {
-      try {
-        event = await eventsCollection.findOne({ _id: new ObjectId(eventId) });
-      } catch (err) {
-        // Invalid ObjectId format, ignore this error
-      }
+    try {
+      // First try with ObjectId
+      event = await db.collection("events").findOne({ 
+          _id: new ObjectId(eventId) 
+      });
+    } catch (e) {
+      // If that fails, try with string ID
+      event = await db.collection("events").findOne({ 
+        _id: eventId as unknown as ObjectId
+      });
     }
 
     if (!event) {
       return NextResponse.json(
-        { success: false, message: 'Event not found' },
+        { error: "Event not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, event });
-  } catch (error) {
-    console.error('Error fetching event:', error);
+    return NextResponse.json(event);
+  } catch (error: any) {
+    console.error("Error fetching event:", error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { error: "Failed to fetch event", details: error.message },
       { status: 500 }
     );
   }

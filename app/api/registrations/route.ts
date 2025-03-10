@@ -114,26 +114,32 @@ export async function GET(req: NextRequest) {
     const userId = searchParams.get("userId");
     const eventId = searchParams.get("eventId");
     
+    console.log("Fetching registrations with params:", { userId, eventId });
+    
     const client = await clientPromise;
     const db = client.db("varnothsava");
 
     let query = {};
     
     if (userId) {
+      // Make sure we're querying with the exact userId format from the database
       query = { ...query, userId };
     }
     
     if (eventId) {
       query = { ...query, eventId };
     }
-
+    
+    console.log("Query:", JSON.stringify(query));
+    
     const registrations = await db.collection("registrations").find(query).toArray();
-
+    console.log(`Found ${registrations.length} registrations`);
+    
     return NextResponse.json(registrations, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching registrations:", error);
     return NextResponse.json(
-      { error: "Failed to fetch registrations" },
+      { error: "Failed to fetch registrations", details: error.message },
       { status: 500 }
     );
   }

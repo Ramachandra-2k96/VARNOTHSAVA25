@@ -8,6 +8,7 @@ import { User, School, Star, Trophy, ChevronRight, LogOut } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { getAuth } from 'firebase/auth';
 import { auth } from '@/lib/firebase'; // Adjust the import path as necessary
+import UserEvents from '../dashboard/UserEvents';
 
 interface User {
   _id: string;
@@ -166,24 +167,24 @@ export default function ProfileSection() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-t-purple-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg font-medium">Loading...</p>
+          <p className="text-gray-300 text-lg font-medium">Loading...</p>
         </div>
       </div>
     );
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-800 p-4">
-      <div className="max-w-md mx-auto">
-        {/* Profile Section - Exactly as drawn in the mockup */}
+    <div className="min-h-screen bg-gray-900 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Profile Section - Dark Theme */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-xl shadow-lg overflow-hidden mb-4"
+          className="bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-6"
         >
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4">
             <div className="flex items-center justify-between">
@@ -200,20 +201,54 @@ export default function ProfileSection() {
                 {user?.firstname?.[0]}{user?.lastname?.[0]}
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-800">{user?.firstname} {user?.lastname}</h3>
-                <div className="flex items-center text-gray-600 text-sm">
+                <h3 className="text-lg font-bold text-white">{user?.firstname} {user?.lastname}</h3>
+                <div className="flex items-center text-gray-400 text-sm">
                   <School size={14} className="mr-1" />
                   <p>{user?.college || 'No college available'}</p>
                 </div>
               </div>
             </div>
             
-            {/* Dedicated Show QR button as per drawing */}
+            {/* Points Display */}
+            <div className="bg-gray-700 rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="bg-yellow-500/20 p-2 rounded-full mr-3">
+                    <Star className="text-yellow-500" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Points</p>
+                    <motion.p 
+                      className="text-white text-xl font-bold"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ 
+                        opacity: animatePoints ? 1 : 0, 
+                        scale: animatePoints ? 1 : 0.8 
+                      }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                      {user?.points || 0}
+                    </motion.p>
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={navigateToLeaderboard}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center transition-colors"
+                >
+                  <Trophy size={16} className="mr-1" />
+                  Leaderboard
+                  <ChevronRight size={16} className="ml-1" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Dedicated Show QR button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleQRCode}
-              className="w-full mb-4 bg-indigo-50 border border-indigo-100 text-indigo-700 py-2 px-4 rounded-lg font-medium flex items-center justify-center shadow-sm"
+              className="w-full mb-4 bg-gray-700 border border-gray-600 text-gray-200 py-2 px-4 rounded-lg font-medium flex items-center justify-center shadow-sm hover:bg-gray-600 transition-colors"
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -249,70 +284,43 @@ export default function ProfileSection() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mb-4 bg-gray-50 p-3 rounded-lg flex flex-col items-center"
+                  transition={{ duration: 0.3 }}
+                  className="bg-white p-4 rounded-lg mb-4 flex justify-center"
                 >
-                  <div className="bg-white p-2 rounded-lg shadow-sm">
-                    <QRCode value={cachedQR || user?._id || 'No ID available'} size={150} level="H" />
-                  </div>
-                  <p className="text-xs text-gray-400 mt-2 text-center">Scan at event checkpoints</p>
+                  {cachedQR && (
+                    <div className="p-2 bg-white rounded-lg">
+                      <QRCode 
+                        value={cachedQR} 
+                        size={200}
+                        level="H"
+                        className="mx-auto"
+                      />
+                      <p className="text-center mt-2 text-sm text-gray-600">Scan to verify identity</p>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
             
-            <div className="border-t border-gray-100 pt-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-600 flex items-center text-sm">
-                  <Star size={14} className="mr-1 text-amber-400" />
-                  Total Points
-                </span>
-                <motion.div
-                  initial={{ scale: 1 }}
-                  animate={{ scale: animatePoints ? [1, 1.2, 1] : 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold px-3 py-1 rounded-full text-sm"
-                >
-                  {user?.points || 0}
-                </motion.div>
-              </div>
-              
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min((user?.points || 0) / 10, 100)}%` }}
-                  transition={{ duration: 1.5, delay: 0.2 }}
-                  className="h-full bg-gradient-to-r from-amber-400 to-orange-500"
-                ></motion.div>
-              </div>
-            </div>
-            
+            {/* Logout Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={navigateToLeaderboard}
-              className="mt-4 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-between shadow-md"
-            >
-              <div className="flex items-center">
-                <Trophy size={16} className="mr-2" />
-                Leaderboard
-              </div>
-              <ChevronRight size={16} />
-            </motion.button>
-            
-            {/* Add Logout Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleLogout}
-              className="mt-3 w-full bg-gray-100 text-gray-700 border border-gray-200 py-2 px-4 rounded-lg font-medium flex items-center justify-between shadow-sm hover:bg-gray-200 transition-colors"
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center shadow-sm transition-colors"
             >
-              <div className="flex items-center">
-                <LogOut size={16} className="mr-2" />
-                Logout
-              </div>
-              <ChevronRight size={16} />
+              <LogOut size={16} className="mr-2" />
+              Logout
             </motion.button>
           </div>
         </motion.div>
+        
+        {/* User Events Section */}
+        {user && (
+          <div className="mt-6">  
+            <UserEvents userId={typeof user._id === 'string' ? user._id : user._id} />
+          </div>
+        )}
       </div>
     </div>
   );
