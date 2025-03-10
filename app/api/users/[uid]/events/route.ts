@@ -4,10 +4,12 @@ import { ObjectId } from "mongodb";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ uid: string }> }
 ) {
   try {
-    const userId = params.userId;
+    // Use 'uid' from the route to set userId
+    const { uid } = await params;
+    const userId = uid;
     
     if (!userId) {
       return NextResponse.json(
@@ -37,4 +39,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}

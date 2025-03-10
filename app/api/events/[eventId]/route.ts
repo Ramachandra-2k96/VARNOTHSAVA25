@@ -12,12 +12,13 @@ interface Event {
   password: string;
 }
 
+// Correct route handler signature for Next.js 15
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { eventId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
-    const eventId = params.eventId;
+    const { eventId } = await params;
     
     if (!eventId) {
       return NextResponse.json(
@@ -35,7 +36,7 @@ export async function GET(
     try {
       // First try with ObjectId
       event = await db.collection("events").findOne({ 
-          _id: new ObjectId(eventId) 
+        _id: new ObjectId(eventId) 
       });
     } catch (e) {
       // If that fails, try with string ID
