@@ -51,40 +51,53 @@ export default function Podium({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ delay: 0.3 }}
-      className="relative h-[400px] md:h-[450px] w-full flex items-end justify-center mb-12"
+      className="relative h-[400px] md:h-[450px] w-full mb-12"
     >
-      {/* Podium Base */}
-      <div className="absolute bottom-0 w-full h-4 bg-gray-800/50 rounded-full blur-md"></div>
+      {/* Podium Base with cyberpunk glow - but no line on top */}
+      <div className="absolute bottom-0 w-full h-4 bg-purple-800/50 rounded-full blur-md shadow-[0_0_20px_rgba(192,38,211,0.4)]"></div>
       
-      {/* Second Place */}
-      <PodiumCard
-        position={2}
-        name={items[1].name}
-        points={items[1].points}
-        photoURL={items[1].photoURL}
-        subtitle={showSubtitle ? items[1].subtitle : undefined}
-        delay={0.5}
-      />
+      {/* Podium Container */}
+      <div className="absolute bottom-0 w-full flex justify-center items-end">
+        <div className="flex items-end space-x-4 md:space-x-8">
+          {/* Second Place */}
+          <div className="mb-10 md:mb-16">
+            <PodiumCard
+              position={2}
+              name={items[1].name}
+              points={items[1].points}
+              photoURL={items[1].photoURL}
+              subtitle={showSubtitle ? items[1].subtitle : undefined}
+              delay={0.5}
+            />
+          </div>
+          
+          {/* First Place */}
+          <div className="mb-0 md:mb-0">
+            <PodiumCard
+              position={1}
+              name={items[0].name}
+              points={items[0].points}
+              photoURL={items[0].photoURL}
+              subtitle={showSubtitle ? items[0].subtitle : undefined}
+              delay={0.3}
+            />
+          </div>
+          
+          {/* Third Place */}
+          <div className="mb-20 md:mb-24">
+            <PodiumCard
+              position={3}
+              name={items[2].name}
+              points={items[2].points}
+              photoURL={items[2].photoURL}
+              subtitle={showSubtitle ? items[2].subtitle : undefined}
+              delay={0.7}
+            />
+          </div>
+        </div>
+      </div>
       
-      {/* Third Place */}
-      <PodiumCard
-        position={3}
-        name={items[2].name}
-        points={items[2].points}
-        photoURL={items[2].photoURL}
-        subtitle={showSubtitle ? items[2].subtitle : undefined}
-        delay={0.7}
-      />
-      
-      {/* First Place */}
-      <PodiumCard
-        position={1}
-        name={items[0].name}
-        points={items[0].points}
-        photoURL={items[0].photoURL}
-        subtitle={showSubtitle ? items[0].subtitle : undefined}
-        delay={0.3}
-      />
+      {/* Removed the decorative lines that were appearing on top of player cards */}
     </motion.div>
   );
 } 
